@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Disaster</title>
+</head>
+<body>
+
+    <h2>Report a Disaster</h2>
+    <form id="reportForm">
+        <label for="description">Description:</label>
+        <textarea id="description" required></textarea>
+
+        <label for="video">Upload Video:</label>
+        <input type="file" id="video" accept="video/mp4" required>
+
+        <label for="audio">Upload Audio:</label>
+        <input type="file" id="audio" accept="audio/mpeg" required>
+
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" readonly required>
+
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" readonly required>
+
+        <button type="submit">Submit Report</button>
+    </form>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                });
+            } else {
+                alert("Geolocation is not supported.");
+            }
+        }
+        window.onload = getLocation;
+
+        document.getElementById("reportForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            async function getBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result.split(',')[1]); // Extract base64
+                    reader.onerror = error => reject(error);
+                });
+            }
+
+            const description = document.getElementById("description").value;
+            const latitude = document.getElementById("latitude").value;
+            const longitude = document.getElementById("longitude").value;
+            const videoFile = document.getElementById("video").files[0];
+            const audioFile = document.getElementById("audio").files[0];
+
+            const videoBase64 = await getBase64(videoFile);
+            const audioBase64 = await getBase64(audioFile);
+
+            const payload = {
+                description,
+                latitude,
+                longitude,
+                video: videoBase64,
+                audio: audioBase64,
+                videoFileName: videoFile.name,
+                audioFileName: audioFile.name
+            };
+
+            try {
+                const response = await fetch("http://localhost:8000/reportDisaster", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        });
+    </script>
+
+</body>
+</html>
