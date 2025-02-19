@@ -32,7 +32,15 @@ const userLogin = async(req, res) =>
     console.log(req.body);
     
     let result = await dbClient.query('select * from credentials where aadhar = $1', [aadhar]);
-    console.log(result.rows[0].hashedpassword)
+    
+    if(result.rowCount)
+    {
+      console.log(result.rows[0].hashedpassword)
+    }
+    else
+    {
+      return res.send("Invalid credentials.")
+    }
     const isPasswordCorrect = await bcrypt.compare(password, result.rows[0].hashedpassword);
     if(isPasswordCorrect)
     {
@@ -45,6 +53,7 @@ const userLogin = async(req, res) =>
     }
     else
     {
+      console.log("Invalid credentials.")
       response.invalidCredentials = true;
       return res.json(response)
     }
