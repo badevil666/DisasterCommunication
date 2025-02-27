@@ -8,7 +8,7 @@ dotenv.config()
 
 const PORT = process.env.PORT || 8000
 
-const logger = (req, res, next) => 
+const logger = (req, res, next) =>
 {
     console.log(`${req.method} ${req.url}`)
     next();
@@ -32,10 +32,14 @@ app.use(express.static(path.join(__dirname, 'Public')))
 const userRegister = require('./Routes/User/userRegister')
 const userLogin = require('./Routes/User/userLogin')
 const reportDisaster = require('./Routes/User/reportDisaster')
+const updateLocation = require('./Routes/User/updateLocation')
+const viewDisaster = require('./Routes/User/viewDisaster')
 
 app.use('/userRegister', userRegister)
 app.use('/userLogin', userLogin)
 app.use('/reportDisaster', reportDisaster)
+app.use('/updateLocation', updateLocation)
+app.use('/viewDisaster', viewDisaster)
 
 app.get('/', (req, res) => {
     //res.send("Hello World. God is the ultimate sourece of wisdom")
@@ -45,7 +49,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server started listening on port ${PORT}`)
 })
-
-
-
-

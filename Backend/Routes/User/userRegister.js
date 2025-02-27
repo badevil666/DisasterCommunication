@@ -9,15 +9,13 @@ var dbClient = require('../../DataBase/dbClient')
 const userRegister = async (req, res) => 
 {
     let response = {
-        invaidRequest : false,
         aadharExists : false,
         eMailExists : false,
-        registrationSuccess : false,
-        internalServerError: false
+        registrationSuccess : false
     }
     console.log(req.body)
-    const {aadhar, userName, dob, eMail, phoneNo, permanentLocationX, permanentLocationY, currentLocationX, currentLocationY, districttaluk, password} = req.body;
-    if((aadhar && userName && dob && eMail && permanentLocationX && permanentLocationY && currentLocationX && currentLocationY && districttaluk && password))
+    const {aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk, skills, password} = req.body;
+    if((aadhar && userName && dob && gender, eMail && currentLocationX && currentLocationY && districtTaluk && password))
     {
         try
         {
@@ -30,9 +28,13 @@ const userRegister = async (req, res) =>
                 console.log("Registration unsuccessfull")
                 return res.json(response);
             }
-            console.log([aadhar, userName, dob, eMail, phoneNo, permanentLocationX, permanentLocationY, currentLocationX, currentLocationY, districttaluk])
             
-            await dbClient.query('insert into users values($1, $2, $3, $4, $5, POINT($6, $7), POINT($8, $9), $10)', [aadhar, userName, dob, eMail, phoneNo, permanentLocationX, permanentLocationY, currentLocationX, currentLocationY, districttaluk]);
+            await dbClient.query('insert into users values($1, $2, $3, $4, $5, $6, POINT($7, $8), $9)', [aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk]);
+
+            for(let skill of skills)
+            {
+                await dbClient.query('insert into userskills values($1, $2)', [aadhar, skill]);
+            }
             const hashedPassword = await hashPassord(password);
             await dbClient.query('insert into credentials values($1, $2)', [aadhar, hashedPassword]);
             
@@ -50,7 +52,6 @@ const userRegister = async (req, res) =>
     }
     else
     {
-        response.invaidRequest = true;
         response.aadharExists = null;
         response.eMailExists = null;
         return res.json(response)

@@ -9,7 +9,9 @@ const saltRounds = 10;
 let response = {
   aadharPresent : false,
   passwordPresent : false,
-  invalidCredentials : false
+  invalidCredentials : false,
+  userData: null,
+  disasterData: null
 };
 
 router.get('/', (req, res) => {
@@ -44,12 +46,19 @@ const userLogin = async(req, res) =>
     const isPasswordCorrect = await bcrypt.compare(password, result.rows[0].hashedpassword);
     if(isPasswordCorrect)
     {
-      result = await dbClient.query('select email from users where aadhar = $1', [aadhar]);
+      userData = (await dbClient.query('select * from users where aadhar = $1', [aadhar])).rows;
+      disasterData = (await dbClient.query('select * from disastervolunteer as dv join disaster as d on dv.disasterid = d.id where aadhar = $1', [aadhar])).rows;
       let user = result.rows[0];
+      console.log(userData)
+      console.log(disasterData)
       console.log("login success");
-      const token = jwt.sign({ aadhar: aadhar, eMail : user.email}, JWT_SECRET, {expiresIn : '1h'});
-      console.log(token);
-      return res.json({authorizationToken : token})
+      //const token = jwt.sign({ aadhar: aadhar, eMail : user.email}, JWT_SECRET, {expiresIn : '1h'});
+      //console.log(token);
+      response.userData = userData;
+      response.disasterData = disasterData;
+      return res.json(response)
+      
+      
     }
     else
     {
