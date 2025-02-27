@@ -15,13 +15,13 @@ let response = {
 };
 
 router.get('/', (req, res) => {
-  res.render('userLogin')  
+  res.render('userLogin')
   console.log('Hit user login')
 })
 
-const userLogin = async(req, res) => 
+const userLogin = async(req, res) =>
 {
-  try 
+  try
   {
     const {aadhar, password} = req.body
     console.log(aadhar, password)
@@ -32,9 +32,9 @@ const userLogin = async(req, res) =>
     response.aadharPresent = true;
     response.passwordPresent = true;
     console.log(req.body);
-    
+
     let result = await dbClient.query('select * from credentials where aadhar = $1', [aadhar]);
-    
+
     if(result.rowCount)
     {
       console.log(result.rows[0].hashedpassword)
@@ -48,7 +48,6 @@ const userLogin = async(req, res) =>
     {
       userData = (await dbClient.query('select * from users where aadhar = $1', [aadhar])).rows;
       disasterData = (await dbClient.query('select * from disastervolunteer as dv join disaster as d on dv.disasterid = d.id where aadhar = $1', [aadhar])).rows;
-      let user = result.rows[0];
       console.log(userData)
       console.log(disasterData)
       console.log("login success");
@@ -57,8 +56,8 @@ const userLogin = async(req, res) =>
       response.userData = userData;
       response.disasterData = disasterData;
       return res.json(response)
-      
-      
+
+
     }
     else
     {

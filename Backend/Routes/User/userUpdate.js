@@ -11,8 +11,7 @@ const userRegister = async (req, res) =>
     let response = {
         aadharExists : false,
         eMailExists : false,
-        registrationSuccess : false,
-        userData : null
+        registrationSuccess : false
     }
     console.log(req.body)
     const {aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk, skills, password} = req.body;
@@ -30,7 +29,7 @@ const userRegister = async (req, res) =>
                 return res.json(response);
             }
 
-            await dbClient.query('insert into users values($1, $2, $3, $4, $5, $6, POINT($7, $8), $9)', [aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk]);
+            await dbClient.query('update users set aadhar=$1, username = $2, dob = $3, gender = $4, email = $5, phoneno = $6, ', [aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk]);
 
             for(let skill of skills)
             {
@@ -41,7 +40,6 @@ const userRegister = async (req, res) =>
 
             response.registrationSuccess = true;
             console.log("Registration Successful")
-            response.userData = { aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk, skills }
             return res.json(response)
 
         }
