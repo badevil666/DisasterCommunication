@@ -17,9 +17,9 @@ CREATE TABLE Users (
     Aadhar BIGINT CHECK(Aadhar > 99999999999 AND Aadhar < 1000000000000) PRIMARY KEY, 
     UserName VARCHAR(25), 
     DOB DATE, 
+    Gender CHAR(1),
     EMail VARCHAR(35) NOT NULL UNIQUE, 
-    PhoneNo CHAR(10) NOT NULL, 
-    PermanentLocation POINT, 
+    PhoneNo CHAR(10) NOT NULL,
     CurrentLocation POINT, 
     districttalukid int,
     FOREIGN KEY (districttalukid) REFERENCES districtstaluk(id)
@@ -49,9 +49,9 @@ CREATE TABLE Report (
     ID SERIAL PRIMARY KEY, 
     ReportDescription TEXT, 
     ReportedLocation POINT, 
-    Video TEXT, 
-    Audio TEXT, 
+    Video TEXT,
     ReportedUser BIGINT,
+    DisasterType varchar(20),
     FOREIGN KEY (ReportedUser) REFERENCES Users(Aadhar) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -192,7 +192,19 @@ INSERT INTO districtstaluk (id, district, taluk) VALUES
 (67, 'Kasaragod', 'Manjeshwaram'),
 (68, 'Kasaragod', 'Vellarikundu');
 
+INSERT INTO skills (id, skill) VALUES
+(1, 'Medical Assistance'),
+(2, 'CPR & First Aid'),
+(3, 'Swimming'),
+(4, 'Search and Rescue'),
+(5, 'Firefighting'),
+(6, 'Disaster Assessment'),
+(7, 'Emergency Shelter Management'),
+(8, 'Logistics and Supply Chain'),
+(9, 'Psychological First Aid'),
+(10, 'Radio Communication');
 
+/*
 INSERT INTO Users (Aadhar, UserName, DOB, EMail, PhoneNo, PermanentLocation, CurrentLocation, districttalukid) VALUES
 (123456789012, 'Anil Kumar', '1990-05-14', 'anil.kumar@example.com', '9876543210', POINT(8.5241, 76.9366), POINT(8.5264, 76.9487), 1),
 (234567890123, 'Ramesh Iyer', '1985-09-21', 'ramesh.iyer@example.com', '9898765432', POINT(9.9312, 76.2673), POINT(9.9351, 76.2703), 31),
@@ -217,17 +229,7 @@ INSERT INTO Credentials (Aadhar, hashedPassword) VALUES
 (901234567890, '$2a$10$M7QXPJ2YK9N4H2X5O8LJGV3DQN7T6WKH8JZ5MLXYOVP3R1O4KBNQP'), -- "qwerty2024"
 (912345678901, '$2a$10$P4N6M7QXJZ1YOVL82K9H2O5T3DQN7WKH8JXGJ4R5MPXJHOQBNL7V'); -- "testUser999"
 
-INSERT INTO skills (id, skill) VALUES
-(1, 'Medical Assistance'),
-(2, 'CPR & First Aid'),
-(3, 'Swimming'),
-(4, 'Search and Rescue'),
-(5, 'Firefighting'),
-(6, 'Disaster Assessment'),
-(7, 'Emergency Shelter Management'),
-(8, 'Logistics and Supply Chain'),
-(9, 'Psychological First Aid'),
-(10, 'Radio Communication');
+
 
 INSERT INTO UserSkills (Aadhar, skill) VALUES
 (123456789012, 1), -- Medical Assistance
@@ -264,6 +266,6 @@ INSERT INTO Authority (ID, IRSPosition, District) VALUES
 ('C11223', 'Assistant Collector', 'Kochi'),
 ('D44556', 'Tehsildar', 'Thiruvananthapuram'),
 ('E78901', 'Block Development Officer', 'Palakkad');
-
--- \c postgres;
--- drop DATABASE "DisasterCommunication";
+*/
+--\c postgres;
+--drop DATABASE "DisasterCommunication";

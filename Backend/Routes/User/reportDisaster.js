@@ -18,7 +18,8 @@ router.post('/', async (req, res) =>
   console.log('📥 Incoming request headers:', req.headers);
 
   console.log('📂 Files received:', req.files); // Should log { video: {...} } if working
-
+  const {aadhar, locationX, locationY, type, description} = JSON.parse(req.body.json)
+  
   if (!req.files || !req.files.video) 
   {
     return res.status(400).json({ message: 'No video file uploaded' });
@@ -32,6 +33,8 @@ router.post('/', async (req, res) =>
   try 
   {
     await videoFile.mv(uploadPath);
+    console.log([description, locationX, locationY, uploadPath, aadhar, type])
+    await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype) values($1, POINT($2, $3), $4, $5, $6)', [description, locationX, locationY, uploadPath, aadhar, type])
     res.json({ message: 'Upload successful', file: videoFile.name });
   } 
   catch (err) 
@@ -42,7 +45,7 @@ router.post('/', async (req, res) =>
 
   try
   {
-    const result = await 
+    const result = await dbClient.query()
   }
   catch(err)
   {
