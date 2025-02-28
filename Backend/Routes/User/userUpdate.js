@@ -6,7 +6,7 @@ var dbClient = require('../../DataBase/dbClient')
 
 
 
-const userRegister = async (req, res) =>
+const userUpdate = async (req, res) =>
 {
     let response = {
         aadharExists : false,
@@ -31,13 +31,16 @@ const userRegister = async (req, res) =>
 
             await dbClient.query('update users set aadhar=$1, username = $2, dob = $3, gender = $4, email = $5, phoneno = $6, ', [aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk]);
 
+            await dbClient.query('delete from userSkills where aadhar = $1', [aadhar])
             for(let skill of skills)
             {
                 await dbClient.query('insert into userskills values($1, $2)', [aadhar, skill]);
             }
-            const hashedPassword = await hashPassord(password);
-            await dbClient.query('insert into credentials values($1, $2)', [aadhar, hashedPassword]);
-
+            if(password)
+            {
+              const hashedPassword = await hashPassord(password);
+              await dbClient.query('insert into credentials values($1, $2)', [aadhar, hashedPassword]);
+            }
             response.registrationSuccess = true;
             console.log("Registration Successful")
             return res.json(response)
@@ -65,7 +68,7 @@ router.get('/', (req, res) =>
     res.render('userRegister')
 })
 
-router.post('/',  userRegister)
+router.post('/',  userUpdate)
 
 
 module.exports = router;
