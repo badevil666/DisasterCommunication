@@ -14,13 +14,13 @@ CREATE TABLE districtstaluk(
 
 
 CREATE TABLE Users (
-    Aadhar BIGINT CHECK(Aadhar > 99999999999 AND Aadhar < 1000000000000) PRIMARY KEY, 
-    UserName VARCHAR(25), 
-    DOB DATE, 
+    Aadhar BIGINT CHECK(Aadhar > 99999999999 AND Aadhar < 1000000000000) PRIMARY KEY,
+    UserName VARCHAR(25),
+    DOB DATE,
     Gender CHAR(1),
-    EMail VARCHAR(35) NOT NULL UNIQUE, 
+    EMail VARCHAR(35) NOT NULL UNIQUE,
     PhoneNo CHAR(10) NOT NULL,
-    CurrentLocation POINT, 
+    CurrentLocation POINT,
     districttalukid int,
     FOREIGN KEY (districttalukid) REFERENCES districtstaluk(id)
 );
@@ -38,17 +38,17 @@ CREATE TABLE skills(
 );
 
 CREATE TABLE UserSkills (
-    Aadhar BIGINT, 
-    skill int, 
-    PRIMARY KEY (Aadhar, skill), 
+    Aadhar BIGINT,
+    skill int,
+    PRIMARY KEY (Aadhar, skill),
     FOREIGN KEY (Aadhar) REFERENCES Users(Aadhar) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (skill) REFERENCES skills(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Report (
-    ID SERIAL PRIMARY KEY, 
-    ReportDescription TEXT, 
-    ReportedLocation POINT, 
+    ID SERIAL PRIMARY KEY,
+    ReportDescription TEXT,
+    ReportedLocation POINT,
     Video TEXT,
     ReportedUser BIGINT,
     DisasterType varchar(20),
@@ -56,18 +56,19 @@ CREATE TABLE Report (
 );
 
 CREATE TABLE Disaster (
-    ID SERIAL PRIMARY KEY, 
-    DisasterDescription TEXT, 
-    OccurredLocation POINT, 
+    ID SERIAL PRIMARY KEY,
+    title TEXT,
+    DisasterDescription TEXT,
+    OccurredLocation POINT,
     DisasterTimeStamp TIMESTAMP,
-    ReportPath TEXT, 
+    ReportPath TEXT,
     MaxPersonnel INT,
     ReportID int,
     FOREIGN KEY(ReportID) REFERENCES Report(ID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE ReportDisaster (
-    ReportID INT, 
+    ReportID INT,
     DisasterID INT,
     PRIMARY KEY (ReportID, DisasterID),
     FOREIGN KEY (ReportID) REFERENCES Report(ID) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -76,12 +77,12 @@ CREATE TABLE ReportDisaster (
 
 CREATE TABLE Authority (
     ID VARCHAR(50) PRIMARY KEY,
-    IRSPosition TEXT, 
+    IRSPosition TEXT,
     District VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE DisasterVolunteer (
-    Aadhar BIGINT, 
+    Aadhar BIGINT,
     DisasterID INT,
     PRIMARY KEY (Aadhar, DisasterID),
     FOREIGN KEY (Aadhar) REFERENCES Users(Aadhar) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -89,7 +90,7 @@ CREATE TABLE DisasterVolunteer (
 );
 
 CREATE TABLE AuthorityVerifiesReport (
-    ReportID INT, 
+    ReportID INT,
     AuthorityID VARCHAR(25),
     PRIMARY KEY (ReportID, AuthorityID),
     FOREIGN KEY (ReportID) REFERENCES Report(ID) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -97,10 +98,10 @@ CREATE TABLE AuthorityVerifiesReport (
 );
 
 CREATE TABLE DisasterGuidelines (
-    ID SERIAL PRIMARY KEY, 
+    ID SERIAL PRIMARY KEY,
     DisasterID INT,
-    guideline TEXT, 
-    IssuedTime TIMESTAMP, 
+    guideline TEXT,
+    IssuedTime TIMESTAMP,
     AuthorityID VARCHAR(25),
     FOREIGN KEY (DisasterID) REFERENCES Disaster(ID) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (AuthorityID) REFERENCES Authority(ID) ON DELETE CASCADE ON UPDATE CASCADE
@@ -244,13 +245,13 @@ INSERT INTO UserSkills (Aadhar, skill) VALUES
 (890123456789, 10); -- Radio Communication
 
 INSERT INTO Report (ReportDescription, ReportedLocation, Video, Audio, ReportedUser) VALUES
-('Flood damage in residential area', POINT(76.2673, 9.9312), 
+('Flood damage in residential area', POINT(76.2673, 9.9312),
  'https://example.com/videos/flood1.mp4', 'https://example.com/audio/report1.wav', 123456789012),
 
-('Landslide blocking the road', POINT(76.3584, 10.1234), 
+('Landslide blocking the road', POINT(76.3584, 10.1234),
  'https://example.com/videos/landslide.mp4', NULL, 234567890123),
 
-('Collapsed bridge near river', POINT(76.4523, 9.8765), 
+('Collapsed bridge near river', POINT(76.4523, 9.8765),
  NULL, 'https://example.com/audio/report3.mp3', 345678901234);
 
 INSERT INTO Disaster (DisasterDescription, OccurredLocation, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES

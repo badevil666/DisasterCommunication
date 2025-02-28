@@ -34,13 +34,13 @@ const userLogin = require('./Routes/User/userLogin')
 const reportDisaster = require('./Routes/User/reportDisaster')
 const updateLocation = require('./Routes/User/updateLocation')
 const viewDisaster = require('./Routes/User/viewDisaster')
-
+const userUpdate = require('./Routes/User/userUpdate')
 app.use('/userRegister', userRegister)
 app.use('/userLogin', userLogin)
 app.use('/reportDisaster', reportDisaster)
 app.use('/updateLocation', updateLocation)
 app.use('/viewDisaster', viewDisaster)
-
+app.use('/userUpdate', userUpdate)
 app.get('/', (req, res) => {
     //res.send("Hello World. God is the ultimate sourece of wisdom")
     res.render('home')
