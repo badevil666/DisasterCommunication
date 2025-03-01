@@ -29,18 +29,26 @@ app.use(express.json({ limit: '500mb' })); // Increase JSON body limit
 app.use(express.urlencoded({ limit: '500mb', extended: true })); // Increase URL-encoded body limit
 app.use(express.static(path.join(__dirname, 'Public')))
 
+const getVolunteerData  = require('./Routes/User/getVolunteerData')
+const getDashboard = require('./Routes/User/getDashboard')
+const joinVolunteering = require('./Routes/User/joinVolunteering')
 const userRegister = require('./Routes/User/userRegister')
 const userLogin = require('./Routes/User/userLogin')
 const reportDisaster = require('./Routes/User/reportDisaster')
 const updateLocation = require('./Routes/User/updateLocation')
-//const getDisaster = require('./Routes/User/getDisaster')
+const getDisaster = require('./Routes/User/getDisaster')
 const userUpdate = require('./Routes/User/userUpdate')
+
+app.use('/getVolunteerData', getVolunteerData)
+//app.use('/getDashboard', getDashboard)
+app.use('/joinVolunteering', joinVolunteering)
 app.use('/userRegister', userRegister)
 app.use('/userLogin', userLogin)
 app.use('/reportDisaster', reportDisaster)
 app.use('/updateLocation', updateLocation)
-//app.use('/getDisaster', getDisaster)
+app.use('/getDisaster', getDisaster)
 app.use('/userUpdate', userUpdate)
+
 app.get('/', (req, res) => {
     //res.send("Hello World. God is the ultimate sourece of wisdom")
     res.render('home')

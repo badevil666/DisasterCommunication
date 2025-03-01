@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const dbClient = require('../../DataBase/dbClient')
-
+const axios = require('axios');
 const router = express.Router();
 
 // Ensure uploads directory exists
@@ -12,6 +12,23 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+const getLocationDetails = async (lat, lon) => {
+    try {
+        const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
+            params: {
+                lat: lat,
+                lon: lon,
+                format: 'json',
+                zoom: 10, // Zoom level to get administrative divisions
+            }
+        });
+        console.log(response.data.address)
+        return { county, state_district } = response.data.address;
+
+    } catch (error) {
+        console.error('Reverse geocoding error:', error);
+    }
+};
 // Define the upload endpoint
 router.post('/', async (req, res) =>
 {

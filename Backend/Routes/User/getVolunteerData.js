@@ -11,7 +11,14 @@ const getVolunteer = async(req, res) =>
 
   console.log(req.body)
   const {aadhar} = req.body
-  let volunteerData = (await dbClient.query('select d.id, d.title, d.disastertimestamp from disaster as d join disastervolunteer ad dv on d.aadhar = dv.aadhar', [aadhar]))
-  response.data = volunteerData.rows
-  res.json(response)
+  if(aadhar)
+  {
+    let volunteerData = (await dbClient.query('select d.id, d.title, d.disastertimestamp from disaster as d join disastervolunteer as dv on d.id = dv.disasterid where dv.aadhar = $1', [aadhar]))
+    response.data = volunteerData.rows
+    console.log(response)
+    res.json(response)
+  }
 }
+
+router.post('/', getVolunteer)
+module.exports = router
