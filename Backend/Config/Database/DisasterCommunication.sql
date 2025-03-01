@@ -1,3 +1,6 @@
+\c postgres;
+drop DATABASE "DisasterCommunication";
+
 CREATE USER Group18 WITH ENCRYPTED PASSWORD 'jithinkerinmitultom';
 
 CREATE DATABASE "DisasterCommunication";
@@ -12,11 +15,10 @@ CREATE TABLE districtstaluk(
     taluk varchar(20)
 );
 
-
 CREATE TABLE Users (
     Aadhar BIGINT CHECK(Aadhar > 99999999999 AND Aadhar < 1000000000000) PRIMARY KEY,
     UserName VARCHAR(25),
-    DOB DATE,
+    DOB TEXT,
     Gender CHAR(1),
     EMail VARCHAR(35) NOT NULL UNIQUE,
     PhoneNo CHAR(10) NOT NULL,
@@ -59,7 +61,6 @@ CREATE TABLE Disaster (
     ID SERIAL PRIMARY KEY,
     title TEXT,
     DisasterDescription TEXT,
-    OccurredLocation POINT,
     DisasterTimeStamp TIMESTAMP,
     ReportPath TEXT,
     MaxPersonnel INT,
@@ -67,19 +68,16 @@ CREATE TABLE Disaster (
     FOREIGN KEY(ReportID) REFERENCES Report(ID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE ReportDisaster (
-    ReportID INT,
-    DisasterID INT,
-    PRIMARY KEY (ReportID, DisasterID),
-    FOREIGN KEY (ReportID) REFERENCES Report(ID) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (DisasterID) REFERENCES Disaster(ID) ON DELETE CASCADE ON UPDATE CASCADE
-);
 
 CREATE TABLE Authority (
     ID VARCHAR(50) PRIMARY KEY,
     IRSPosition TEXT,
     District VARCHAR(30) NOT NULL
 );
+
+CREATE TABLE IRS (
+    id SERIAL PRIMARY KEY,
+    position TEXT NOT NULL);
 
 CREATE TABLE DisasterVolunteer (
     Aadhar BIGINT,
@@ -110,88 +108,86 @@ CREATE TABLE DisasterGuidelines (
 
 -- Sample Data
 
-INSERT INTO districtstaluk (id, district, taluk) VALUES
-(1, 'Thiruvananthapuram', 'Thiruvananthapuram'),
-(2, 'Thiruvananthapuram', 'Neyyattinkara'),
+INSERT INTO districtstaluk (id, district, taluk) VALUES 
+(1, 'Thiruvananthapuram', 'Neyyattinkara'),
+(2, 'Thiruvananthapuram', 'Kattakkada'),
 (3, 'Thiruvananthapuram', 'Nedumangad'),
-(4, 'Thiruvananthapuram', 'Chirayinkeezhu'),
-(5, 'Thiruvananthapuram', 'Varkala'),
-(6, 'Thiruvananthapuram', 'Kattakada'),
-
+(4, 'Thiruvananthapuram', 'Thiruvananthapuram'),
+(5, 'Thiruvananthapuram', 'Chirayinkeezhu'),
+(6, 'Thiruvananthapuram', 'Varkala'),
 (7, 'Kollam', 'Kollam'),
-(8, 'Kollam', 'Kottarakkara'),
-(9, 'Kollam', 'Punalur'),
-(10, 'Kollam', 'Karunagappally'),
-(11, 'Kollam', 'Pathanapuram'),
-
-(12, 'Pathanamthitta', 'Adoor'),
-(13, 'Pathanamthitta', 'Kozhencherry'),
-(14, 'Pathanamthitta', 'Ranni'),
-(15, 'Pathanamthitta', 'Thiruvalla'),
-(16, 'Pathanamthitta', 'Konni'),
-
-(17, 'Alappuzha', 'Cherthala'),
-(18, 'Alappuzha', 'Ambalappuzha'),
-(19, 'Alappuzha', 'Kuttanad'),
-(20, 'Alappuzha', 'Chengannur'),
-(21, 'Alappuzha', 'Mavelikkara'),
-
-(22, 'Kottayam', 'Kottayam'),
-(23, 'Kottayam', 'Changanassery'),
-(24, 'Kottayam', 'Meenachil'),
-(25, 'Kottayam', 'Vaikom'),
-(26, 'Kottayam', 'Kanjirappally'),
-
-(27, 'Idukki', 'Thodupuzha'),
-(28, 'Idukki', 'Udumbanchola'),
-(29, 'Idukki', 'Devikulam'),
-(30, 'Idukki', 'Peerumedu'),
-
-(31, 'Ernakulam', 'Kochi'),
-(32, 'Ernakulam', 'Kanayannur'),
-(33, 'Ernakulam', 'Aluva'),
-(34, 'Ernakulam', 'Paravur'),
-(35, 'Ernakulam', 'Kunnathunad'),
+(8, 'Kollam', 'Kunnathoor'),
+(9, 'Kollam', 'Karunagappally'),
+(10, 'Kollam', 'Kottarakkara'),
+(11, 'Kollam', 'Punalur'),
+(12, 'Kollam', 'Pathanapuram'),
+(13, 'Pathanamthitta', 'Adoor'),
+(14, 'Pathanamthitta', 'Konni'),
+(15, 'Pathanamthitta', 'Kozhencherry'),
+(16, 'Pathanamthitta', 'Ranni'),
+(17, 'Pathanamthitta', 'Mallappally'),
+(18, 'Pathanamthitta', 'Thiruvalla'),
+(19, 'Alappuzha', 'Chengannoor'),
+(20, 'Alappuzha', 'Mavelikkara'),
+(21, 'Alappuzha', 'Karthikappally'),
+(22, 'Alappuzha', 'Kuttanad'),
+(23, 'Alappuzha', 'Ambalappuzha'),
+(24, 'Alappuzha', 'Cherthala'),
+(25, 'Kottayam', 'Changanasserry'),
+(26, 'Kottayam', 'Kottayam'),
+(27, 'Kottayam', 'Vaikom'),
+(28, 'Kottayam', 'Meenachil'),
+(29, 'Kottayam', 'Kanjirappally'),
+(30, 'Idukki', 'Peermade'),
+(31, 'Idukki', 'Udumbanchola'),
+(32, 'Idukki', 'Idukki'),
+(33, 'Idukki', 'Thodupuzha'),
+(34, 'Idukki', 'Devikulam'),
+(35, 'Ernakulam', 'Kothamangalam'),
 (36, 'Ernakulam', 'Muvattupuzha'),
+(37, 'Ernakulam', 'Kunnathunad'),
+(38, 'Ernakulam', 'Kanayannur'),
+(39, 'Ernakulam', 'Kochi'),
+(40, 'Ernakulam', 'North Paravur'),
+(41, 'Ernakulam', 'Aluva'),
+(42, 'Thrissur', 'Chalakudy'),
+(43, 'Thrissur', 'Mukundapuram'),
+(44, 'Thrissur', 'Kodungallur'),
+(45, 'Thrissur', 'Thrissur'),
+(46, 'Thrissur', 'Chavakkad'),
+(47, 'Thrissur', 'Kunnamkulam'),
+(48, 'Thrissur', 'Thalapilly'),
+(49, 'Palakkad', 'Alathoor'),
+(50, 'Palakkad', 'Chittur'),
+(51, 'Palakkad', 'Palakkad'),
+(52, 'Palakkad', 'Pattambi'),
+(53, 'Palakkad', 'Ottapalam'),
+(54, 'Palakkad', 'Mannarkkad'),
+(55, 'Palakkad', 'Attappady'),
+(56, 'Malappuram', 'Perinthalmanna'),
+(57, 'Malappuram', 'Nilambur'),
+(58, 'Malappuram', 'Ernad'),
+(59, 'Malappuram', 'Kondotty'),
+(60, 'Malappuram', 'Ponnani'),
+(61, 'Malappuram', 'Tirur'),
+(62, 'Malappuram', 'Tirurangadi'),
+(63, 'Kozhikode', 'Kozhikode'),
+(64, 'Kozhikode', 'Thamarassery'),
+(65, 'Kozhikode', 'Koyilandy'),
+(66, 'Kozhikode', 'Vatakara'),
+(67, 'Wayanad', 'Vythiri'),
+(68, 'Wayanad', 'Sulthan Bathery'),
+(69, 'Wayanad', 'Mananthavady'),
+(70, 'Kannur', 'Thalassery'),
+(71, 'Kannur', 'Iritty'),
+(72, 'Kannur', 'Kannur'),
+(73, 'Kannur', 'Taliparamba'),
+(74, 'Kannur', 'Payyanur'),
+(75, 'Kasaragod', 'Hosdurg'),
+(76, 'Kasaragod', 'Vellarikund'),
+(77, 'Kasaragod', 'Kasaragod'),
+(78, 'Kasaragod', 'Manjeshwaram');
 
-(37, 'Thrissur', 'Thrissur'),
-(38, 'Thrissur', 'Chavakkad'),
-(39, 'Thrissur', 'Kodungallur'),
-(40, 'Thrissur', 'Mukundapuram'),
-(41, 'Thrissur', 'Talappilly'),
-
-(42, 'Palakkad', 'Palakkad'),
-(43, 'Palakkad', 'Alathur'),
-(44, 'Palakkad', 'Chittur'),
-(45, 'Palakkad', 'Ottapalam'),
-(46, 'Palakkad', 'Mannarkkad'),
-(47, 'Palakkad', 'Pattambi'),
-
-(48, 'Malappuram', 'Ernad'),
-(49, 'Malappuram', 'Perinthalmanna'),
-(50, 'Malappuram', 'Tirur'),
-(51, 'Malappuram', 'Ponnani'),
-(52, 'Malappuram', 'Nilambur'),
-(53, 'Malappuram', 'Kondotty'),
-
-(54, 'Kozhikode', 'Kozhikode'),
-(55, 'Kozhikode', 'Koyilandy'),
-(56, 'Kozhikode', 'Vadakara'),
-
-(57, 'Wayanad', 'Mananthavady'),
-(58, 'Wayanad', 'Sulthan Bathery'),
-(59, 'Wayanad', 'Vythiri'),
-
-(60, 'Kannur', 'Kannur'),
-(61, 'Kannur', 'Taliparamba'),
-(62, 'Kannur', 'Thalassery'),
-(63, 'Kannur', 'Payyanur'),
-(64, 'Kannur', 'Iritty'),
-
-(65, 'Kasaragod', 'Kasaragod'),
-(66, 'Kasaragod', 'Hosdurg'),
-(67, 'Kasaragod', 'Manjeshwaram'),
-(68, 'Kasaragod', 'Vellarikundu');
 
 INSERT INTO skills (id, skill) VALUES
 (1, 'Medical Assistance'),
@@ -205,68 +201,169 @@ INSERT INTO skills (id, skill) VALUES
 (9, 'Psychological First Aid'),
 (10, 'Radio Communication');
 
-/*
-INSERT INTO Users (Aadhar, UserName, DOB, EMail, PhoneNo, PermanentLocation, CurrentLocation, districttalukid) VALUES
-(123456789012, 'Anil Kumar', '1990-05-14', 'anil.kumar@example.com', '9876543210', POINT(8.5241, 76.9366), POINT(8.5264, 76.9487), 1),
-(234567890123, 'Ramesh Iyer', '1985-09-21', 'ramesh.iyer@example.com', '9898765432', POINT(9.9312, 76.2673), POINT(9.9351, 76.2703), 31),
-(345678901234, 'Sreeja Menon', '1992-07-11', 'sreeja.menon@example.com', '9785641230', POINT(10.5276, 76.2145), POINT(10.5243, 76.2211), 42),
-(456789012345, 'Vishnu Prasad', '1995-03-25', 'vishnu.prasad@example.com', '9871234567', POINT(11.2588, 75.7804), POINT(11.2602, 75.7841), 54),
-(567890123456, 'Aparna Krishnan', '1998-12-05', 'aparna.krishnan@example.com', '9674321098', POINT(10.7867, 76.6548), POINT(10.7891, 76.6587), 48),
-(678901234567, 'Rajesh Pillai', '1991-11-19', 'rajesh.pillai@example.com', '9567890432', POINT(12.3155, 75.9432), POINT(12.3191, 75.9459), 60),
-(789012345678, 'Meera Nair', '1987-04-28', 'meera.nair@example.com', '9456789012', POINT(9.2985, 76.9921), POINT(9.3012, 76.9953), 15),
-(890123456789, 'Sajith Varma', '1993-06-07', 'sajith.varma@example.com', '9345678921', POINT(11.8742, 75.3709), POINT(11.8773, 75.3746), 64),
-(901234567890, 'Divya Mohan', '1996-08-15', 'divya.mohan@example.com', '9234567890', POINT(8.7551, 77.0254), POINT(8.7583, 77.0289), 5),
-(912345678901, 'Arjun Reddy', '1994-10-30', 'arjun.reddy@example.com', '9123456789', POINT(10.0123, 76.3456), POINT(10.0157, 76.3491), 26);
+insert into users VALUES
+(100000000000, 'Tom Cherian', '2003-05-27', 'M', 'ctom71718@gmail.com', 8590212377, POINT(9.9406, 76.2653), 39),
+(100000000001, 'Jithin Raj', '2002-05-27', 'M', 'jithinRaj@mail.com', 1000000000, POINT(9.6287383, 76.6455326), 26),
+(100000000002, 'Kerin Shaiju', '2002-05-12', 'M', 'kerin@gmail.com', 2000000000, POINT(9.7014866, 76.6831302), 28),
+(100000000003, 'Mitul Manoj', '2003-05-27', 'F', 'mitul@mail.com', 3000000000, POINT(9.1723603, 76.500061), 24);
 
-INSERT INTO Credentials (Aadhar, hashedPassword) VALUES
-(123456789012, '$2a$10$7Q5fF1Jq3eGJwY9Q8QfM4uTnQhD1h4xK9Fz8PQa8I8G9lMkX3HkO6'), -- "password123"
-(234567890123, '$2a$10$1QAZwsXEdcRFVtGB6yN3XuJ0A8Ivo12vXwE1U1I7PgV7MNCeKO4Fe'), -- "securePass456"
-(345678901234, '$2a$10$TmkH2/SsXG.O7HjVJ8hvJ.YOfK6ZZ.O8K21X7lfYUiGVOnzA0gPFi'), -- "letMeIn789"
-(456789012345, '$2a$10$TseHIXs73aHFyWEC2.DTj.GD8EjZ3FYh1ZqF3V5AHe7.P98PqQmOG'), -- "pass@word1"
-(567890123456, '$2a$10$Gz13Y0lLW/jEx1GTe8Arv.BM23yOpfX5FQ2xHP3t/P1pXyx96NlQ6'), -- "randomP@ss567"
-(678901234567, '$2a$10$R1Fq8YJexgD8Q3W7/VKxIOhL64jD23ONPQK9HsXYgN4UHdP8J5BQK'), -- "admin987"
-(789012345678, '$2a$10$H3Jt5YWK2eLQF7Nx/ZLdUOlGxpDzY4Vt96NQK3A7YHgJOPK2M8H3Q'), -- "helloWorld@123"
-(890123456789, '$2a$10$L8JZ1kEY5O/PQ2XKNW7HdMlGJ4T9NQ84W3YOVX9N6H2K8R5MPXJHO'), -- "mySuperPass!"
-(901234567890, '$2a$10$M7QXPJ2YK9N4H2X5O8LJGV3DQN7T6WKH8JZ5MLXYOVP3R1O4KBNQP'), -- "qwerty2024"
-(912345678901, '$2a$10$P4N6M7QXJZ1YOVL82K9H2O5T3DQN7WKH8JXGJ4R5MPXJHOQBNL7V'); -- "testUser999"
+insert into credentials VALUES
+(100000000000, '$2b$10$aoSqMGls9FAw3V9MfLWsr.N4aqdQRczxCsrooaNEadxF8/zkitqDO'),
+(100000000001, '$2b$10$8xNFCYxrCvA.1G3vnIiEweXXv1LZ9unxIfa3SvT8fvS/054me8TOK'),
+(100000000002, '$2b$10$pTYpkGTva3vWqxKlEe9Uc.odNcmPo2zrYkWSfBIjfjVCNwxF.vAR6'),
+(100000000003, '$2b$10$ZIIGRzrWN0lRYvnEYsNGk.k5KAfaj8oASkRobWv4JmLj8KULhuaQq');
+
+insert into userskills VALUES
+(100000000000, 1),
+(100000000000, 2),
+(100000000000, 3),
+(100000000001, 4),
+(100000000001, 5),
+(100000000001, 6),
+(100000000002, 7),
+(100000000002, 8),
+(100000000002, 9),
+(100000000003, 10),
+(100000000003, 1),
+(100000000003, 2);
 
 
+insert into report(ReportDescription, ReportedLocation, Video, ReportedUser, DisasterType) VALUES
+('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Fire Accident'),
+('Landslide', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Landslide'),
+('Bridge Collapse', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Infrastructure'),
+('House on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Fire Accident'),
+('Severe Flood', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Flood'),
+('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Fire Accident');
 
-INSERT INTO UserSkills (Aadhar, skill) VALUES
-(123456789012, 1), -- Medical Assistance
-(123456789012, 2), -- CPR & First Aid
-(234567890123, 3), -- Swimming
-(234567890123, 4), -- Search and Rescue
-(345678901234, 5), -- Firefighting
-(456789012345, 6), -- Disaster Assessment
-(567890123456, 7), -- Emergency Shelter Management
-(678901234567, 8), -- Logistics and Supply Chain
-(789012345678, 9), -- Psychological First Aid
-(890123456789, 10); -- Radio Communication
 
-INSERT INTO Report (ReportDescription, ReportedLocation, Video, Audio, ReportedUser) VALUES
-('Flood damage in residential area', POINT(76.2673, 9.9312),
- 'https://example.com/videos/flood1.mp4', 'https://example.com/audio/report1.wav', 123456789012),
+insert into disaster(title, DisasterDescription, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
+('Building Fire', 'Building On fire','2025-03-01 08:30:00', '', 25, 1),
+('Landslide', 'Landslide', '2025-03-01 08:30:00', '', 25, 1),
+('Bridge Collapse', 'BridgeCollapse', '2025-03-01 08:30:00', '', 25, 1),
+('House on fire', 'House on fire', '2025-03-01 08:30:00', '', 25, 1),
+('Severe Flood', 'Flood', '2025-03-01 08:30:00', '', 25, 1),
+('Building on fire', 'Building on Fire', '2025-03-01 08:30:00', '', 25, 1);
 
-('Landslide blocking the road', POINT(76.3584, 10.1234),
- 'https://example.com/videos/landslide.mp4', NULL, 234567890123),
+-- insert into Authority VALUES
 
-('Collapsed bridge near river', POINT(76.4523, 9.8765),
- NULL, 'https://example.com/audio/report3.mp3', 345678901234);
 
-INSERT INTO Disaster (DisasterDescription, OccurredLocation, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
-('Massive flood impacting multiple regions', POINT(76.2673, 9.9312), '2024-12-20 14:30:00', 'https://example.com/reports/flood_december.pdf', 150, 1),
+insert into disastervolunteer VALUES
+(100000000000, 3),
+(100000000000, 4),
+(100000000000, 5),
+(100000000001, 1),
+(100000000001, 5),
+(100000000001, 2),
+(100000000001, 6),
+(100000000002, 1),
+(100000000002, 2),
+(100000000002, 3),
+(100000000002, 4);
 
-('Landslide on the main road', POINT(76.3584, 10.1234), '2025-01-05 08:15:00', 'https://example.com/reports/landslide_january.pdf', 80, 2),
+INSERT INTO IRS (position) VALUES
+('Responsible Officer (RO)'),
+('Incident Commander (IC)'),
+('Deputy Incident Commander (DIC)'),
+('Operation Section Chief (OSC)'),
+('Logistics Section Chief (LSC)'),
+('Planning Section Chief (PSC)'),
+('Safety Officer (SO)'),
+('Media Officer (MO)'),
+('Liaison Officer (LO)'),
+('Information Officer (IO)');
 
-('Bridge collapse due to severe storms', POINT(76.4523, 9.8765), '2025-02-01 22:00:00', NULL, 120, 3);
 
 INSERT INTO Authority (ID, IRSPosition, District) VALUES
-('A12345', 'District Collector', 'Alappuzha'),
-('B67890', 'Revenue Inspector', 'Ernakulam'),
-('C11223', 'Assistant Collector', 'Kochi'),
-('D44556', 'Tehsildar', 'Thiruvananthapuram'),
-('E78901', 'Block Development Officer', 'Palakkad');
-*/
---\c postgres;
---drop DATABASE "DisasterCommunication";
+('RO_Thiruvananthapuram', '1', 'Thiruvananthapuram'),
+('IO_Thiruvananthapuram', '10', 'Thiruvananthapuram'),
+
+('RO_Kollam', '1', 'Kollam'),
+('IO_Kollam', '10', 'Kollam'),
+
+('RO_Pathanamthitta', '1', 'Pathanamthitta'),
+('IO_Pathanamthitta', '10', 'Pathanamthitta'),
+
+('RO_Alappuzha', '1', 'Alappuzha'),
+('IO_Alappuzha', '10', 'Alappuzha'),
+
+('RO_Kottayam', '1', 'Kottayam'),
+('IO_Kottayam', '10', 'Kottayam'),
+
+('RO_Idukki', '1', 'Idukki'),
+('IO_Idukki', '10', 'Idukki'),
+
+('RO_Ernakulam', '1', 'Ernakulam'),
+('IO_Ernakulam', '10', 'Ernakulam'),
+
+('RO_Thrissur', '1', 'Thrissur'),
+('IO_Thrissur', '10', 'Thrissur'),
+
+('RO_Palakkad', '1', 'Palakkad'),
+('IO_Palakkad', '10', 'Palakkad'),
+
+('RO_Malappuram', '1', 'Malappuram'),
+('IO_Malappuram', '10', 'Malappuram'),
+
+('RO_Kozhikode', '1', 'Kozhikode'),
+('IO_Kozhikode', '10', 'Kozhikode'),
+
+('RO_Wayanad', '1', 'Wayanad'),
+('IO_Wayanad', '10', 'Wayanad'),
+
+('RO_Kannur', '1', 'Kannur'),
+('IO_Kannur', '10', 'Kannur'),
+
+('RO_Kasaragod', '1', 'Kasaragod'),
+('IO_Kasaragod', '10', 'Kasaragod');
+
+INSERT INTO AuthorityVerifiesReport (ReportID, AuthorityID) VALUES
+(1, 'IO_Kottayam'),
+(2, 'IO_Kottayam'),
+(3, 'IO_Kottayam'),
+(4, 'IO_Kottayam'),
+(5, 'IO_Kottayam'),
+(6, 'IO_Kottayam');
+
+INSERT INTO DisasterGuidelines (DisasterID, guideline, IssuedTime, AuthorityID) VALUES
+-- Fire Accident
+(1, 'Evacuate the area immediately and call emergency services.', NOW(), 'IO_Kottayam'),
+(1, 'Use wet cloth to cover nose and mouth to avoid smoke inhalation.', NOW(), 'IO_Kottayam'),
+(1, 'Turn off gas and electrical connections if possible.', NOW(), 'IO_Kottayam'),
+(1, 'Do not use elevators; use stairs to exit the building.', NOW(), 'IO_Kottayam'),
+(1, 'Stop, drop, and roll if your clothes catch fire.', NOW(), 'IO_Kottayam'),
+
+-- Landslide
+(2, 'Avoid hilly areas due to the risk of further landslides.', NOW(), 'IO_Kottayam'),
+(2, 'Stay indoors if you are in a safe location.', NOW(), 'IO_Kottayam'),
+(2, 'Do not cross affected roads or bridges.', NOW(), 'IO_Kottayam'),
+(2, 'Move to designated safe zones as per disaster response team.', NOW(), 'IO_Kottayam'),
+(2, 'Listen to local authorities and emergency broadcasts for updates.', NOW(), 'IO_Kottayam'),
+
+-- Infrastructure Collapse
+(3, 'Do not use the collapsed bridge; find an alternate route.', NOW(), 'IO_Kottayam'),
+(3, 'Report missing persons to authorities immediately.', NOW(), 'IO_Kottayam'),
+(3, 'Stay away from the collapse site to prevent secondary accidents.', NOW(), 'IO_Kottayam'),
+(3, 'Emergency personnel will guide evacuation; follow instructions.', NOW(), 'IO_Kottayam'),
+(3, 'Avoid standing under damaged structures.', NOW(), 'IO_Kottayam'),
+
+-- House Fire
+(4, 'Stay away from the burning house and inform the fire department.', NOW(), 'IO_Kottayam'),
+(4, 'Assist elderly and disabled persons in evacuation.', NOW(), 'IO_Kottayam'),
+(4, 'Keep doors closed to contain the fire.', NOW(), 'IO_Kottayam'),
+(4, 'Use fire extinguishers if safe to do so.', NOW(), 'IO_Kottayam'),
+(4, 'Ensure all family members are accounted for after evacuation.', NOW(), 'IO_Kottayam'),
+
+-- Flood
+(5, 'Move to higher ground to avoid rising floodwaters.', NOW(), 'IO_Kottayam'),
+(5, 'Avoid walking or driving through floodwaters.', NOW(), 'IO_Kottayam'),
+(5, 'Disconnect electrical appliances to prevent electrocution.', NOW(), 'IO_Kottayam'),
+(5, 'Store drinking water in case of contamination.', NOW(), 'IO_Kottayam'),
+(5, 'Follow local authorities for evacuation plans.', NOW(), 'IO_Kottayam'),
+
+-- Another Fire Alert
+(6, 'Fire alert: Follow safety protocols and evacuate the building.', NOW(), 'IO_Kottayam'),
+(6, 'Close windows and doors to slow the spread of fire.', NOW(), 'IO_Kottayam'),
+(6, 'Do not panic; stay low to avoid inhaling smoke.', NOW(), 'IO_Kottayam'),
+(6, 'Call emergency services and provide accurate location details.', NOW(), 'IO_Kottayam'),
+(6, 'Avoid re-entering the building until declared safe.', NOW(), 'IO_Kottayam');

@@ -12,7 +12,7 @@ let response = {
   success : false,
   userData: null,
   disasterData: null,
-  userskills : null
+  userSkills : null
 };
 
 router.get('/', (req, res) => {
@@ -49,9 +49,7 @@ const userLogin = async(req, res) =>
     {
       userData = (await dbClient.query('select * from users where aadhar = $1', [aadhar])).rows;
       disasterData = (await dbClient.query('select * from disastervolunteer as dv join disaster as d on dv.disasterid = d.id where aadhar = $1', [aadhar])).rows;
-      userSkills = (await dbClient.query('select id from userskills where aadhar = $1', [aadhar])).rows
-      console.log(userData)
-      console.log(disasterData)
+      userSkills = (await dbClient.query('select skill from userskills where aadhar = $1', [aadhar])).rows
       console.log("login success");
       //const token = jwt.sign({ aadhar: aadhar, eMail : user.email}, JWT_SECRET, {expiresIn : '1h'});
       //console.log(token);
@@ -59,6 +57,7 @@ const userLogin = async(req, res) =>
       response.disasterData = disasterData;
       response.userSkills = userSkills;
       response.success = true;
+      console.log(response)
       return res.json(response)
     }
     else
