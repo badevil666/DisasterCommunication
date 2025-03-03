@@ -39,6 +39,7 @@ const updateLocation = require('./Routes/User/updateLocation')
 const getDisaster = require('./Routes/User/getDisaster')
 const userUpdate = require('./Routes/User/userUpdate')
 
+app.use('/videos', express.static(path.join(__dirname, 'Uploads')))
 app.use('/getVolunteerData', getVolunteerData)
 //app.use('/getDashboard', getDashboard)
 app.use('/joinVolunteering', joinVolunteering)

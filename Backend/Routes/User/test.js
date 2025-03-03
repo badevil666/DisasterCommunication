@@ -1,4 +1,3 @@
-
 const axios = require('axios');
 
 const districtTalukMap = {
@@ -25,6 +24,7 @@ function getTalukNumber(district, taluk) {
         return null; // Return null if not found
     }
 }
+
 const getLocationDetails = async (lat, lon) => {
     try {
         const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
@@ -32,18 +32,43 @@ const getLocationDetails = async (lat, lon) => {
                 lat: lat,
                 lon: lon,
                 format: 'json',
-                zoom: 10, // Zoom level to get administrative divisions
+                zoom: 10, // Get administrative divisions
             }
         });
 
-        return { county, state_district } = response.data.address;
-        console.log(response.data.address)
+        const address = response.data.address;
+        
+        const district = address.county || address.state_district || null;
+        const taluk = address.suburb || address.town || address.village || address.city || null;
 
+        return { district, taluk, rawAddress: address };
     } catch (error) {
         console.error('Reverse geocoding error:', error);
+        return { error: "Geocoding failed" };
     }
 };
 
-const {taluk, district} = 
+// Function to fetch details and log taluk number
+const fetchAndPrintTalukNumber = async () => {
+    try {
+        const data = await getLocationDetails('10.73135944758582', '76.06215585840803');
+        console.log(data)
+        if (data.error) {
+            console.error("Error fetching location details:", data.error);
+            return;
+        }
+        
+        const talukNumber = getTalukNumber(data.rawAddress.state_district, data.rawAddress.county);
+        console.log("Taluk Number:", talukNumber);
+        return talukNumber
+    } catch (error) {
+        console.error("Error:", error);
+    }
+};
 
-getLocationDetails('8.851013557657755', '77.04864908793476')
+async function getTaluk()
+{
+    console.log(await fetchAndPrintTalukNumber());
+}
+
+getTaluk();
