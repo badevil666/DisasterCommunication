@@ -9,29 +9,18 @@ var dbClient = require('../../DataBase/dbClient')
 const userUpdate = async (req, res) =>
 {
     let response = {
-        aadharExists : false,
-        eMailExists : false,
-        registrationSuccess : false
+        success : false
     }
     console.log(req.body)
     const {aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk, skills, password} = req.body;
-    if((aadhar && userName && dob && gender, eMail && currentLocationX && currentLocationY && districtTaluk && password))
+    if((aadhar && userName && dob && gender, eMail && currentLocationX && currentLocationY && districtTaluk))
     {
         try
         {
-            const aadharResult = await dbClient.query('SELECT * FROM users where aadhar=$1', [aadhar])
-            const eMailResult = await dbClient.query('SELECT * FROM users where email=$1', [eMail]);
-            if(aadharResult.rowCount || eMailResult.rowCount || (phoneNo.length < 10))
-            {
-                response.aadharExists = aadharResult.rowCount > 0;
-                response.eMailExists = eMailResult.rowCount > 0;
-                console.log("Registration unsuccessfull")
-                return res.json(response);
-            }
-
-            await dbClient.query('update users set aadhar=$1, username = $2, dob = $3, gender = $4, email = $5, phoneno = $6, ', [aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk]);
+            await dbClient.query('update users set username = $2, dob = $3, gender = $4, email = $5, phoneno = $6, currentLocation = POINT($7, $8), districttalukid = $9 where aadhar = $1 ', [aadhar, userName, dob, gender, eMail, phoneNo, currentLocationX, currentLocationY, districtTaluk]);
 
             await dbClient.query('delete from userSkills where aadhar = $1', [aadhar])
+            
             for(let skill of skills)
             {
                 await dbClient.query('insert into userskills values($1, $2)', [aadhar, skill]);
@@ -41,8 +30,8 @@ const userUpdate = async (req, res) =>
               const hashedPassword = await hashPassord(password);
               await dbClient.query('insert into credentials values($1, $2)', [aadhar, hashedPassword]);
             }
-            response.registrationSuccess = true;
-            console.log("Registration Successful")
+            response.success = true;
+            console.log("Updation Successful")
             return res.json(response)
 
         }

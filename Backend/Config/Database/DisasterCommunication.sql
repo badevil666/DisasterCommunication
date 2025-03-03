@@ -54,6 +54,7 @@ CREATE TABLE Report (
     Video TEXT,
     ReportedUser BIGINT,
     DisasterType varchar(20),
+    taluk int,
     FOREIGN KEY (ReportedUser) REFERENCES Users(Aadhar) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
