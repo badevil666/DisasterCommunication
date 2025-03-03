@@ -81,7 +81,7 @@ const fetchAndPrintTalukNumber = async () => {
 
 async function getTaluk()
 {
-    console.log(await fetchAndPrintTalukNumber());
+    return await fetchAndPrintTalukNumber();
 }
 
 
@@ -100,15 +100,16 @@ router.post('/', async (req, res) =>
 
   let videoFile = req.files.video;
   let fileName = Date.now() + videoFile.name
-  let uploadPath = fileName
+  let uploadPath = path.join(uploadDir, fileName);
   console.log(uploadPath)
 
   try
   {
     await videoFile.mv(uploadPath);
-    console.log([description, locationX, locationY, uploadPath, aadhar, type])
-    const taluk = getTaluk(locationX, locationY)
-    await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype, taluk) values($1, POINT($2, $3), $4, $5, $6, $7)', [description, locationX, locationY, uploadPath, aadhar, type, taluk])
+    let taluk = await getTaluk(locationX, locationY)
+    console.log([description, locationX, locationY, fileName, aadhar, type, taluk])
+
+    await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype, taluk) values($1, POINT($2, $3), $4, $5, $6, $7)', [description, locationX, locationY, fileName, aadhar, type, taluk])
     res.json({ message: 'Upload successful', file: videoFile.name });
   }
   catch (err)
