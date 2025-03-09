@@ -77,6 +77,12 @@ CREATE TABLE Authority (
     District VARCHAR(30) NOT NULL
 );
 
+CREATE TABLE AuthorityCredentials (
+    ID VARCHAR(50) PRIMARY KEY,
+    authorityPassword VARCHAR(255) NOT NULL,
+    FOREIGN KEY (ID) REFERENCES Authority(ID)
+);
+
 CREATE TABLE IRS (
     id SERIAL PRIMARY KEY,
     position TEXT NOT NULL);
@@ -231,12 +237,12 @@ insert into userskills VALUES
 
 
 insert into report(ReportDescription, ReportedLocation, Video, ReportedUser, DisasterType, taluk) VALUES
-('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Fire Accident', 1),
-('Landslide', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Landslide', 2),
-('Bridge Collapse', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Infrastructure', 39),
-('House on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Fire Accident', 4),
-('Severe Flood', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Flood', 5),
-('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Fire Accident', 6);
+('Building on fire', POINT(9.458, 75.25), '/video', 100000000000, 'Fire Accident', 1),
+('Landslide', POINT(9.458, 75.25), '/video', 100000000000, 'Landslide', 2),
+('Bridge Collapse', POINT(9.458, 75.25), '/video', 100000000001, 'Infrastructure', 39),
+('House on fire', POINT(9.458, 75.25), '/video', 100000000001, 'Fire Accident', 4),
+('Severe Flood', POINT(9.458, 75.25), '/video', 100000000002, 'Flood', 5),
+('Building on fire', POINT(9.458, 75.25), '/video', 100000000002, 'Fire Accident', 6);
 
 
 insert into disaster(title, DisasterDescription, occurredLocation, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
@@ -318,6 +324,49 @@ INSERT INTO Authority (ID, IRSPosition, District) VALUES
 
 ('RO_Kasaragod', '1', 'Kasaragod'),
 ('IO_Kasaragod', '10', 'Kasaragod');
+
+INSERT INTO authoritycredentials (ID, authorityPassword) VALUES
+('RO_Thiruvananthapuram', 'password1'),
+('IO_Thiruvananthapuram', 'password2'),
+
+('RO_Kollam', 'password3'),
+('IO_Kollam', 'password4'),
+
+('RO_Pathanamthitta', 'password5'),
+('IO_Pathanamthitta', 'password6'),
+
+('RO_Alappuzha', 'password7'),
+('IO_Alappuzha', 'password8'),
+
+('RO_Kottayam', 'password9'),
+('IO_Kottayam', 'password10'),
+
+('RO_Idukki', 'password11'),
+('IO_Idukki', 'password12'),
+
+('RO_Ernakulam', 'password13'),
+('IO_Ernakulam', 'password14'),
+
+('RO_Thrissur', 'password15'),
+('IO_Thrissur', 'password16'),
+
+('RO_Palakkad', 'password17'),
+('IO_Palakkad', 'password18'),
+
+('RO_Malappuram', 'password19'),
+('IO_Malappuram', 'password20'),
+
+('RO_Kozhikode', 'password21'),
+('IO_Kozhikode', 'password22'),
+
+('RO_Wayanad', 'password23'),
+('IO_Wayanad', 'password24'),
+
+('RO_Kannur', 'password25'),
+('IO_Kannur', 'password26'),
+
+('RO_Kasaragod', 'password27'),
+('IO_Kasaragod', 'password28');
 
 INSERT INTO AuthorityVerifiesReport (ReportID, AuthorityID) VALUES
 (1, 'IO_Kottayam'),
