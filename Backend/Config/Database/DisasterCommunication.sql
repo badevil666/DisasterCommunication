@@ -62,6 +62,7 @@ CREATE TABLE Disaster (
     ID SERIAL PRIMARY KEY,
     title TEXT,
     DisasterDescription TEXT,
+    occurredLocation POINT,
     DisasterTimeStamp TIMESTAMP,
     ReportPath TEXT,
     MaxPersonnel INT,
@@ -229,22 +230,22 @@ insert into userskills VALUES
 (100000000003, 2);
 
 
-insert into report(ReportDescription, ReportedLocation, Video, ReportedUser, DisasterType) VALUES
-('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Fire Accident'),
-('Landslide', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Landslide'),
-('Bridge Collapse', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Infrastructure'),
-('House on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Fire Accident'),
-('Severe Flood', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Flood'),
-('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Fire Accident');
+insert into report(ReportDescription, ReportedLocation, Video, ReportedUser, DisasterType, taluk) VALUES
+('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Fire Accident', 1),
+('Landslide', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000000, 'Landslide', 2),
+('Bridge Collapse', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Infrastructure', 39),
+('House on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000001, 'Fire Accident', 4),
+('Severe Flood', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Flood', 5),
+('Building on fire', POINT(9.458, 75.25), '/home/kalki/DisasterCommunication/Uploads/video', 100000000002, 'Fire Accident', 6);
 
 
-insert into disaster(title, DisasterDescription, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
-('Building Fire', 'Building On fire','2025-03-01 08:30:00', '', 25, 1),
-('Landslide', 'Landslide', '2025-03-01 08:30:00', '', 25, 1),
-('Bridge Collapse', 'BridgeCollapse', '2025-03-01 08:30:00', '', 25, 1),
-('House on fire', 'House on fire', '2025-03-01 08:30:00', '', 25, 1),
-('Severe Flood', 'Flood', '2025-03-01 08:30:00', '', 25, 1),
-('Building on fire', 'Building on Fire', '2025-03-01 08:30:00', '', 25, 1);
+insert into disaster(title, DisasterDescription, occurredLocation, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
+('Building Fire', 'Building On fire', POINT(9.458, 75.25),'2025-03-01 08:30:00', '', 25, 1),
+('Landslide', 'Landslide', POINT(9.458, 75.25), '2025-03-01 08:30:00', '', 25, 2),
+('Bridge Collapse', 'BridgeCollapse', POINT(9.458, 75.25),'2025-03-01 08:30:00', '', 25, 3),
+('House on fire', 'House on fire', POINT(9.458, 75.25), '2025-03-01 08:30:00', '', 25, 4),
+('Severe Flood', 'Flood', POINT(9.458, 75.25),'2025-03-01 08:30:00', '', 25, 5),
+('Building on fire', 'Building on Fire', POINT(9.458, 75.25),'2025-03-01 08:30:00', '', 25, 6);
 
 -- insert into Authority VALUES
 
@@ -368,3 +369,72 @@ INSERT INTO DisasterGuidelines (DisasterID, guideline, IssuedTime, AuthorityID) 
 (6, 'Do not panic; stay low to avoid inhaling smoke.', NOW(), 'IO_Kottayam'),
 (6, 'Call emergency services and provide accurate location details.', NOW(), 'IO_Kottayam'),
 (6, 'Avoid re-entering the building until declared safe.', NOW(), 'IO_Kottayam');
+
+CREATE OR REPLACE FUNCTION getNearbyDisaster(_aadhar BIGINT)  
+RETURNS TABLE(
+    ID INT, 
+    DisasterDescription TEXT, 
+    OccurredLocation POINT, 
+    DisasterTimeStamp TIMESTAMP, 
+    MaxPersonnel INT
+)    
+LANGUAGE plpgsql
+AS $$
+DECLARE 
+    user_location POINT;  -- Renamed to avoid confusion with table names
+BEGIN
+    -- Fetch user's location
+    SELECT currentLocation INTO user_location
+    FROM Users 
+    WHERE Aadhar = _aadhar;  
+
+    -- Check if location is NULL (to avoid errors)
+    IF user_location IS NULL THEN
+        RAISE EXCEPTION 'No user found with Aadhar % or location is NULL', _aadhar;
+    END IF;
+
+    -- Return disasters within a 10-unit radius
+    RETURN QUERY 
+    SELECT d.ID, d.DisasterDescription, d.OccurredLocation, d.DisasterTimeStamp, d.MaxPersonnel
+    FROM Disaster AS d
+    WHERE sqrt((user_location[0] - d.OccurredLocation[0])^2 + 
+               (user_location[1] - d.OccurredLocation[1])^2) <= 10; 
+
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION getTalukDisaster(_aadhar BIGINT)  
+RETURNS TABLE(
+    ID INT, 
+    DisasterDescription TEXT, 
+    OccurredLocation POINT, 
+    DisasterTimeStamp TIMESTAMP, 
+    MaxPersonnel INT
+)    
+LANGUAGE plpgsql
+AS $$
+DECLARE 
+    _taluk int; -- Renamed to avoid confusion with table names
+BEGIN
+    -- Fetch user's location
+    SELECT districttalukid INTO _taluk
+    FROM Users 
+    WHERE Aadhar = _aadhar;  
+
+    -- Check if location is NULL (to avoid errors)
+    IF _taluk IS NULL THEN
+        RAISE EXCEPTION 'No user found with Aadhar % or location is NULL', _aadhar;
+    END IF;
+
+    -- Return disasters within a 10-unit radius
+    RETURN QUERY 
+    SELECT d.ID, d.DisasterDescription, d.OccurredLocation, d.DisasterTimeStamp, d.MaxPersonnel
+    FROM Disaster AS d join Report as r on r.id = d.ReportID
+    WHERE r.taluk = _taluk; 
+
+END;
+$$;
+
+
+

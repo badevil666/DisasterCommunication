@@ -15,13 +15,18 @@ const getGuidelines = async (req, res) =>
         console.log(req.body)
         if(disasterID)
         {
-            let result = await dbClient.query('select issuedtime, guideline from guidelines where disasterid = $1', [disasterID])
+            let result = await dbClient.query('select issuedtime, guideline from disasterguidelines where disasterid = $1', [disasterID])
             response.guidelines = result.rows;
             res.json(response)
         }
     }
     catch (err)
     {
-
+        console.log('Error in getguidelines')
+        console.log(err)
     }
 }
+
+router.post('/', getGuidelines)
+
+module.exports = router
