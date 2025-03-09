@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Communication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+        }
+        .container {
+            display: contents;
+            gap: 10px;
+        }
+        .sidebar {
+            display: inline;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+        }
+        .sidebar button {
+            background-color: purple;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100px;
+            border-radius: 10px;
+        }
+        .content {
+            flex-grow: 1;
+            background-color: #d9b3b3;
+            padding: 20px;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column; /* Stack modals vertically */
+            gap: 10px; /* Adds space between modals */
+            align-items: center; /* Centers modals horizontally */
+        }
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid purple;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);  
+            min-width: 80%;
+        }
+        .modal button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>DISASTER COMMUNICATION</h2>
+
+    <div class="container">
+        <div class="sidebar">
+            <button>Reports</button>
+            <button>Disasters</button>
+        </div>
+        <div class="content">
+            <div class="modal">
+                <p>Report</p>
+                <button>View</button>
+            </div>
+            <div class="modal">
+                <p>Report</p>
+                <button>View</button>
+            </div>
+            <div class="modal">
+                <p>Report</p>
+                <button>View</button>
+            </div>
+            <div class="modal">
+                <p>Report</p>
+                <button>View</button>
+            </div>
+            <div class="modal">
+                <p>Report</p>
+                <button>View</button>
+            </div>
+        </div>
+        
+
+</body>
+</html>

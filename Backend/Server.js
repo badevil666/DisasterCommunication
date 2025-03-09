@@ -38,10 +38,12 @@ const reportDisaster = require('./Routes/User/reportDisaster')
 const updateLocation = require('./Routes/User/updateLocation')
 const getDisaster = require('./Routes/User/getDisaster')
 const userUpdate = require('./Routes/User/userUpdate')
+const getGuidelines = require('./Routes/User/getGuidelines')
+
 
 app.use('/videos', express.static(path.join(__dirname, 'Uploads')))
 app.use('/getVolunteerData', getVolunteerData)
-//app.use('/getDashboard', getDashboard)
+app.use('/getDashboard', getDashboard)
 app.use('/joinVolunteering', joinVolunteering)
 app.use('/userRegister', userRegister)
 app.use('/userLogin', userLogin)
@@ -49,6 +51,8 @@ app.use('/reportDisaster', reportDisaster)
 app.use('/updateLocation', updateLocation)
 app.use('/getDisaster', getDisaster)
 app.use('/userUpdate', userUpdate)
+app.use('/getGuidelines', getGuidelines)
+
 
 app.get('/', (req, res) => {
     //res.send("Hello World. God is the ultimate sourece of wisdom")
