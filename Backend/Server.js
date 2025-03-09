@@ -3,6 +3,7 @@ const app = express();
 const dotenv = require('dotenv')
 const path = require('path')
 const fileUpload = require("express-fileupload")
+const cookieParser = require('cookie-parser'); // Import cookie-parser
 
 dotenv.config()
 
@@ -28,6 +29,7 @@ app.use(fileUpload({ limits: { fileSize: 1024 * 1024 * 1024 } })); // 1GB limit
 app.use(express.json({ limit: '500mb' })); // Increase JSON body limit
 app.use(express.urlencoded({ limit: '500mb', extended: true })); // Increase URL-encoded body limit
 app.use(express.static(path.join(__dirname, 'Public')))
+app.use(cookieParser()); 
 
 const getVolunteerData  = require('./Routes/User/getVolunteerData')
 const getDashboard = require('./Routes/User/getDashboard')
@@ -39,7 +41,9 @@ const updateLocation = require('./Routes/User/updateLocation')
 const getDisaster = require('./Routes/User/getDisaster')
 const userUpdate = require('./Routes/User/userUpdate')
 const getGuidelines = require('./Routes/User/getGuidelines')
-
+const authorityDashboard = require('./Routes/Authority/authorityDashboard')
+const authorityLogin = require('./Routes/Authority/authorityLogin')
+const getReports = require('./Routes/Authority/getReports')
 
 app.use('/videos', express.static(path.join(__dirname, 'Uploads')))
 app.use('/getVolunteerData', getVolunteerData)
@@ -52,7 +56,9 @@ app.use('/updateLocation', updateLocation)
 app.use('/getDisaster', getDisaster)
 app.use('/userUpdate', userUpdate)
 app.use('/getGuidelines', getGuidelines)
-
+app.use('/authorityDashboard', authorityDashboard)
+app.use('/authorityLogin', authorityLogin)
+app.use('/getReports', getReports)
 
 app.get('/', (req, res) => {
     //res.send("Hello World. God is the ultimate sourece of wisdom")

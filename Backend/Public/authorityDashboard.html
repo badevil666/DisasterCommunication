@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Communication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            width: 150px;
+            background-color: #f2f2f2;
+        }
+        .sidebar button {
+            background-color: purple;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .sidebar button:hover {
+            background-color: darkviolet;
+        }
+        .content {
+            flex-grow: 1;
+            background-color: #d9b3b3;
+            padding: 20px;
+            min-height: 80vh;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid purple;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);  
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal button {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border: none;
+            background-color: purple;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal button:hover {
+            background-color: darkviolet;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>DISASTER COMMUNICATION</h2>
+
+    <div class="container">
+        <div class="sidebar">
+            <button onclick="fetchReports()">Reports</button>
+        </div>
+        <div class="content" id="content">
+            <p>Click a button to load data.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiBaseURL = "http://localhost:8000"; // Replace with actual backend URL
+
+        // Function to fetch reports from the backend
+        async function fetchReports() {
+            const authorityId = localStorage.getItem("authorityId"); // Get from localStorage
+
+            if (!authorityId) {
+                console.error("No authorityId found in localStorage.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBaseURL}/getReports`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ authorityId }) // Send in JSON payload
+                });
+
+                const result = await response.json();
+                displayReports(result.data); // Display fetched reports
+            } catch (error) {
+                console.error("Error fetching reports:", error);
+            }
+        }
+
+        // Function to display reports properly
+        function displayReports(reports) {
+            const contentDiv = document.getElementById("content");
+            contentDiv.innerHTML = ""; // Clear existing content
+
+            if (!reports || reports.length === 0) {
+                contentDiv.innerHTML = `<p>No reports found.</p>`;
+                return;
+            }
+
+            reports.forEach(report => {
+                const reportDiv = document.createElement("div");
+                reportDiv.className = "modal";
+                reportDiv.innerHTML = `
+                    <p><strong>${report.disastertype}</strong></p>
+                    <p>${report.reportdescription}</p>
+                    <p><strong>Location:</strong> (${report.reportedlocation.x}, ${report.reportedlocation.y})</p>
+                    <p><strong>Reported by:</strong> ${report.reporteduser}</p>
+                    <button onclick="viewDetails(${report.id})">View</button>
+                `;
+                contentDiv.appendChild(reportDiv);
+            });
+        }
+
+        // Function to handle "View" button click
+        // Function to show report details inline instead of modal
+// Function to show disaster details
+async function viewDetails(id) {
+    try {
+        const response = await fetch(`${apiBaseURL}/reports/${id}`);
+        const report = await response.json();
+
+        const contentDiv = document.getElementById("content");
+        contentDiv.innerHTML = `
+            <div class="modal">
+                <h3>${report.disastertype}</h3>
+                <p><strong>Description:</strong> ${report.reportdescription}</p>
+                <p><strong>Location:</strong> (${report.reportedlocation.x}, ${report.reportedlocation.y})</p>
+                <p><strong>Reported by:</strong> ${report.reporteduser}</p>
+                
+                ${report.video ? `
+                    <video controls>
+                        <source src="${apiBaseURL}/videos/${report.video}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                ` : '<p>No video available.</p>'}
+                
+                <button onclick="fetchReports()">Back to Reports</button>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error fetching report details:", error);
+    }
+}
+
+
+
+        // Auto-fetch reports every 3 seconds
+        function autoUpdate() {
+            fetchReports();
+            setTimeout(autoUpdate, 3000);
+        }
+        
+        autoUpdate(); // Start auto-updating when page loads
+    </script>
+
+</body>
+</html>

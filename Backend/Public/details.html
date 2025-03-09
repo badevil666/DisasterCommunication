@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+        }
+        .video {
+            margin-top: 20px;
+        }
+        video {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid purple;
+            border-radius: 10px;
+        }
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: purple;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: darkviolet;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Disaster Details</h2>
+        <div id="disasterDetails">
+            <p>Loading...</p>
+        </div>
+        <div class="video">
+            <h3>Response Video</h3>
+            <video id="responseVideo" controls>
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <button class="back-button" onclick="goBack()">Back</button>
+    </div>
+
+    <script>
+        const apiBaseURL = "http://localhost:8000"; // Replace with actual backend URL
+
+        // Get the disaster ID from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const disasterId = urlParams.get("id");
+
+        async function fetchDisasterDetails() {
+            if (!disasterId) {
+                document.getElementById("disasterDetails").innerHTML = "<p>Invalid disaster ID.</p>";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBaseURL}/disasters/${disasterId}`);
+                const disaster = await response.json();
+
+                document.getElementById("disasterDetails").innerHTML = `
+                    <h3>${disaster.title}</h3>
+                    <p>${disaster.description}</p>
+                    <p><strong>Date:</strong> ${disaster.date}</p>
+                    <p><strong>Location:</strong> ${disaster.location}</p>
+                `;
+
+                // Set video source
+                document.getElementById("responseVideo").src = `${apiBaseURL}/videos/${disaster.video}`;
+            } catch (error) {
+                document.getElementById("disasterDetails").innerHTML = "<p>Error loading details.</p>";
+                console.error("Error fetching disaster details:", error);
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        fetchDisasterDetails();
+    </script>
+
+</body>
+</html>
