@@ -62,9 +62,9 @@ const getLocationDetails = async (lat, lon) => {
 };
 
 // Function to fetch details and log taluk number
-const fetchAndPrintTalukNumber = async () => {
+const fetchAndPrintTalukNumber = async (x, y) => {
     try {
-        const data = await getLocationDetails('11.051927399555705', '75.86342262371745');
+        const data = await getLocationDetails(x, y);
         console.log(data)
         if (data.error) {
             console.error("Error fetching location details:", data.error);
@@ -79,16 +79,16 @@ const fetchAndPrintTalukNumber = async () => {
     }
 };
 
-async function getTaluk()
+async function getTaluk(x, y)
 {
-    return await fetchAndPrintTalukNumber();
+    return await fetchAndPrintTalukNumber(x, y);
 }
 
 
 // Define the upload endpoint
 router.post('/', async (req, res) =>
 {
-  console.log('📥 Incoming request headers:', req.headers);
+  console.log('📥 Incoming request headers:', req.body.json);
 
   console.log('📂 Files received:', req.files); // Should log { video: {...} } if working
   const {aadhar, locationX, locationY, type, description} = JSON.parse(req.body.json)

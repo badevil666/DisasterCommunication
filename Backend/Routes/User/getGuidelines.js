@@ -17,6 +17,7 @@ const getGuidelines = async (req, res) =>
         {
             let result = await dbClient.query('select issuedtime, guideline from disasterguidelines where disasterid = $1', [disasterID])
             response.guidelines = result.rows;
+            console.log(response)
             res.json(response)
         }
     }

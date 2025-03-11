@@ -52,7 +52,7 @@
             padding: 20px;
             border-radius: 10px;
             border: 1px solid purple;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);  
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
             max-width: 400px;
             text-align: center;
         }
@@ -68,6 +68,82 @@
         .modal button:hover {
             background-color: darkviolet;
         }
+        .backButton  {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border: none;
+            background-color: purple;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .backButton:hover {
+            background-color: darkviolet;
+        }
+        #contentDiv {
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #e6e0e0;
+    }
+    #verifyForm {
+        background: white;
+        padding: 30px;
+        margin-right: 10px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 400px;
+        text-align: center;
+    }
+    #verifyForm label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+    }
+    #verifyForm input, #verifyForm textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    #videoContainer {
+        margin-top: 15px;
+    }
+    button {
+        background: #007bff;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+    }
+    .backButton {
+        background: #6c757d;
+    }
+    button:hover {
+        opacity: 0.8;
+    }
+    #guidelinesSection {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 400px;
+        text-align: center;
+    }
+    #guidelinesList {
+        text-align: left;
+        margin-top: 10px;
+    }
+    .guideline {
+        padding: 8px;
+        border-bottom: 1px solid #ccc;
+    }
     </style>
 </head>
 <body>
@@ -77,6 +153,8 @@
     <div class="container">
         <div class="sidebar">
             <button onclick="fetchReports()">Reports</button>
+            <button onclick="fetchDisasters()">Disasters</button>
+
         </div>
         <div class="content" id="content">
             <p>Click a button to load data.</p>
@@ -84,8 +162,9 @@
     </div>
 
     <script>
-        const apiBaseURL = "http://localhost:8000"; // Replace with actual backend URL
-
+        const apiBaseURL = "http://172.16.21.188:8000"; // Replace with actual backend URL
+        let result
+        let update = true
         // Function to fetch reports from the backend
         async function fetchReports() {
             const authorityId = localStorage.getItem("authorityId"); // Get from localStorage
@@ -102,8 +181,31 @@
                     body: JSON.stringify({ authorityId }) // Send in JSON payload
                 });
 
-                const result = await response.json();
+                result = await response.json();
+                console.log(result)
                 displayReports(result.data); // Display fetched reports
+            } catch (error) {
+                console.error("Error fetching reports:", error);
+            }
+        }
+        async function fetchDisasters() {
+            const authorityId = localStorage.getItem("authorityId"); // Get from localStorage
+
+            if (!authorityId) {
+                console.error("No authorityId found in localStorage.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBaseURL}/getDisasters`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ authorityId }) // Send in JSON payload
+                });
+
+                result = await response.json();
+                console.log(result)
+                displayDisasters(result.data); // Display fetched reports
             } catch (error) {
                 console.error("Error fetching reports:", error);
             }
@@ -118,8 +220,10 @@
                 contentDiv.innerHTML = `<p>No reports found.</p>`;
                 return;
             }
+            let i = 0
 
             reports.forEach(report => {
+
                 const reportDiv = document.createElement("div");
                 reportDiv.className = "modal";
                 reportDiv.innerHTML = `
@@ -127,52 +231,195 @@
                     <p>${report.reportdescription}</p>
                     <p><strong>Location:</strong> (${report.reportedlocation.x}, ${report.reportedlocation.y})</p>
                     <p><strong>Reported by:</strong> ${report.reporteduser}</p>
-                    <button onclick="viewDetails(${report.id})">View</button>
+                    <button onclick="viewDetails(${i})">View</button>
                 `;
                 contentDiv.appendChild(reportDiv);
+                i++;
+            });
+        }
+        function displayDisasters(disasters) {
+            const contentDiv = document.getElementById("content");
+            contentDiv.innerHTML = ""; // Clear existing content
+
+            if (!disasters || disasters.length === 0) {
+                contentDiv.innerHTML = `<p>No disasters found.</p>`;
+                return;
+            }
+            let i = 0
+
+            disasters.forEach(disaster => {
+
+                const reportDiv = document.createElement("div");
+                reportDiv.className = "modal";
+                reportDiv.innerHTML = `
+                    <p><strong>${disaster.title}</strong></p>
+                    <p>${disaster.disasterdescription}</p>
+                    <p><strong>Location:</strong> (${disaster.occurredlocation.x}, ${disaster.occurredlocation.y})</p>
+                    <button onclick="viewDisasterDetails(${i})">View</button>`;
+                contentDiv.appendChild(reportDiv);
+                i++;
             });
         }
 
         // Function to handle "View" button click
         // Function to show report details inline instead of modal
 // Function to show disaster details
-async function viewDetails(id) {
+// Function to fetch detailed disaster report
+async function viewDetails(index) {
     try {
-        const response = await fetch(`${apiBaseURL}/reports/${id}`);
-        const report = await response.json();
-
+        update = false
         const contentDiv = document.getElementById("content");
+        contentDiv.innerHTML = ""; // Clear existing content
+
+
+
+        const report = result.data[index]; // Assuming response returns an array
+        console.log(report)
         contentDiv.innerHTML = `
-            <div class="modal">
-                <h3>${report.disastertype}</h3>
-                <p><strong>Description:</strong> ${report.reportdescription}</p>
-                <p><strong>Location:</strong> (${report.reportedlocation.x}, ${report.reportedlocation.y})</p>
-                <p><strong>Reported by:</strong> ${report.reporteduser}</p>
-                
-                ${report.video ? `
-                    <video controls>
-                        <source src="${apiBaseURL}/videos/${report.video}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                ` : '<p>No video available.</p>'}
-                
-                <button onclick="fetchReports()">Back to Reports</button>
-            </div>
-        `;
+        <div id="contentDiv">
+    <form id="verifyForm">
+        <h2>Verify Report</h2>
+        
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" >
+        
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="type" >
+
+        <label for="disasterDescription">Description:</label>
+        <textarea id="disasterDescription" name="disasterDescription" ></textarea>
+        
+        <label for="occurredLocation">Location:</label>
+        <input type="text" id="occurredLocation" name="occurredLocation" >
+        
+        <label for="disasterTimestamp">Timestamp:</label>
+        <input type="text" id="disasterTimestamp" name="disasterTimestamp" >
+        
+        <label for="maxPersonnel">Max Personnel:</label>
+        <input type="number" id="maxPersonnel" name="maxPersonnel" >
+        
+        <div id="videoContainer"></div>
+        <br>
+        <button type="button" onclick="verifyReport()">Verify</button>
+        <button type="button" class='backButton' onclick="fetchReports()">Back to Reports</button>
+    </form>
+</div>`;
+        document.getElementById("type").value = report.disastertype;
+        document.getElementById("disasterDescription").value = report.reportdescription;
+        document.getElementById("occurredLocation").value = `${report.reportedlocation.x}, ${report.reportedlocation.y}`;
+        document.getElementById("disasterTimestamp").value = report.reportedtimestamp;
+        document.getElementById("maxPersonnel").value = '0';
+        let videoContainer = document.getElementById("videoContainer");
+        if (report.video) {
+            videoContainer.innerHTML = `
+                <video controls style="width: 100%; border-radius: 5px;">
+                    <source src="${apiBaseURL}/videos/${report.video}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+        } else {
+            videoContainer.innerHTML = `<p>No video available.</p>`;
+        }
     } catch (error) {
+        console.error("Error fetching report details:", error);
+    }
+}
+
+async function viewDisasterDetails(index) {
+    try {
+        update = false
+        const contentDiv = document.getElementById("content");
+        contentDiv.innerHTML = ""; // Clear existing content
+        const report = result.data[index]; // Assuming response returns an array
+        console.log(report)
+        contentDiv.innerHTML = `
+        <div id="contentDiv">
+    <form id="verifyForm">
+        <h2>Disaster Report</h2>
+        
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" >
+        
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="type" >
+
+
+        <label for="disasterDescription">Description:</label>
+        <textarea id="disasterDescription" name="disasterDescription" ></textarea>
+        
+        <label for="occurredLocation">Location:</label>
+        <input type="text" id="occurredLocation" name="occurredLocation" >
+        
+        <label for="disasterTimestamp">Timestamp:</label>
+        <input type="text" id="disasterTimestamp" name="disasterTimestamp" >
+        
+        <label for="maxPersonnel">Max Personnel:</label>
+        <input type="number" id="maxPersonnel" name="maxPersonnel" >
+        
+        <div id="videoContainer"></div>
+        <br>
+        <button type="button" onclick="verifyReport()">Verify</button>
+        <button type="button" class='backButton' onclick="fetchReports()">Back to Disasters</button>
+    </form>
+    <div id="guidelinesSection">
+        <h3>Guidelines</h3>
+        <div id="guidelinesList">
+          <ul id='glList'> </ul>  
+            </div>
+        <label for="newGuideline">Add New Guideline:</label>
+        <input type="text" id="newGuideline" name="newGuideline">
+        <button type="button" onclick="addGuideline()">Add Guideline</button>
+    </div>
+</div>`;
+        document.getElementById("title").value = report.title;
+
+        document.getElementById("type").value = report.disastertype;
+        document.getElementById("disasterDescription").value = report.disastertype;
+
+        document.getElementById("disasterDescription").value = report.disasterdescription;
+        document.getElementById("occurredLocation").value = `${report.occurredlocation.x}, ${report.occurredlocation.y}`;
+        document.getElementById("disasterTimestamp").value = report.disastertimestamp;
+        document.getElementById("maxPersonnel").value = '0';
+        let videoContainer = document.getElementById("videoContainer");
+        if (report.video) {
+            videoContainer.innerHTML = `
+                <video controls style="width: 100%; border-radius: 5px;">
+                    <source src="${apiBaseURL}/videos/${report.video}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+        } else {
+            videoContainer.innerHTML = `<p>No video available.</p>`;
+        }
+        let response = await fetch(`${apiBaseURL}/getGuidelines`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ disasterID : report.id }) // Send in JSON payload
+                });
+                response = await response.json()
+                console.log(response[0].guidelines)
+        for (guideline in response[0].guidelines)
+        {
+            let s = '<li>' + guideline.issuedtime + ' ' + guideline.guideline + '</li>'
+            document.getElementById('glList').innerHTML += s
+        }
+
+            } catch (error) {
         console.error("Error fetching report details:", error);
     }
 }
 
 
 
+
         // Auto-fetch reports every 3 seconds
-        function autoUpdate() {
+        /*function autoUpdate() {
             fetchReports();
-            setTimeout(autoUpdate, 3000);
         }
-        
-        autoUpdate(); // Start auto-updating when page loads
+        while(true)
+        {
+            if(update)
+                autoUpdate();
+            setTimeout(3000);
+        }// Start auto-updating when page loads*/
     </script>
 
 </body>

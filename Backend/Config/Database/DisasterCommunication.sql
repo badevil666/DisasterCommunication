@@ -24,6 +24,7 @@ CREATE TABLE Users (
     PhoneNo CHAR(10) NOT NULL,
     CurrentLocation POINT,
     districttalukid int,
+    firebaseToken text,
     FOREIGN KEY (districttalukid) REFERENCES districtstaluk(id)
 );
 
@@ -51,6 +52,7 @@ CREATE TABLE Report (
     ID SERIAL PRIMARY KEY,
     ReportDescription TEXT,
     ReportedLocation POINT,
+    reportTimeStamp TIMESTAMP,
     Video TEXT,
     ReportedUser BIGINT,
     DisasterType varchar(20),
@@ -237,12 +239,12 @@ insert into userskills VALUES
 
 
 insert into report(ReportDescription, ReportedLocation, Video, ReportedUser, DisasterType, taluk) VALUES
-('Building on fire', POINT(9.458, 75.25), '/video', 100000000000, 'Fire Accident', 1),
-('Landslide', POINT(9.458, 75.25), '/video', 100000000000, 'Landslide', 2),
-('Bridge Collapse', POINT(9.458, 75.25), '/video', 100000000001, 'Infrastructure', 39),
-('House on fire', POINT(9.458, 75.25), '/video', 100000000001, 'Fire Accident', 4),
-('Severe Flood', POINT(9.458, 75.25), '/video', 100000000002, 'Flood', 5),
-('Building on fire', POINT(9.458, 75.25), '/video', 100000000002, 'Fire Accident', 6);
+('Building on fire', POINT(9.458, 75.25), 'video.mp4', 100000000000, 'Fire Accident', 1),
+('Landslide', POINT(9.458, 75.25), 'video.mp4', 100000000000, 'Landslide', 2),
+('Bridge Collapse', POINT(9.458, 75.25), 'video.mp4', 100000000001, 'Infrastructure', 39),
+('House on fire', POINT(9.458, 75.25), 'video.mp4', 100000000001, 'Fire Accident', 4),
+('Severe Flood', POINT(9.458, 75.25), 'video.mp4', 100000000002, 'Flood', 5),
+('Building on fire', POINT(9.458, 75.25), 'video.mp4', 100000000002, 'Fire Accident', 6);
 
 
 insert into disaster(title, DisasterDescription, occurredLocation, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
