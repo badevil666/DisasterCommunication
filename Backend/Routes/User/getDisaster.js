@@ -1,7 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const dbClient = require('../../DataBase/dbClient')
-
+const volunteerCountQuery = `SELECT COUNT(*) AS volunteer_count
+FROM DisasterVolunteer
+WHERE DisasterID = $1
+`
 const getDisaster = async (req, res) => {
   let response = {data : null}
   console.log(req.body)
@@ -12,6 +15,10 @@ const getDisaster = async (req, res) => {
   console.log(response)
   response.data[0].videoPath = videoPath.rows[0].video
   console.log(response)
+
+  let count = await dbClient.query(volunteerCountQuery, [disasterID]);
+  response.data[0].volunteerCount = count.rows[0].volunteer_count   
+  
   res.json(response)
 }
 
