@@ -1,32 +1,19 @@
 const express = require('express')
 const dbClient = require('../../DataBase/dbClient')
 const router = express.Router()
-const getUserReportsQuery = `
-    SELECT R.*
-    FROM Report R
+
+const getTalukDisastersQuery = `
+    SELECT 
+        D.*
+    FROM Disaster D
+    JOIN Report R ON R.ID = D.ReportID
     JOIN Users U ON U.Aadhar = $1
     WHERE R.taluk = U.districttalukid;
 `;
 
-const getNearbyReportsQuery = `
-    SELECT 
-        R.*
-    FROM Report R
-    JOIN Users U ON U.Aadhar = $1
-    WHERE 
-        (6371 * acos(
-            cos(radians(U.CurrentLocation[1])) * cos(radians(R.ReportLocation[1])) *
-            cos(radians(R.ReportLocation[0]) - radians(U.CurrentLocation[0])) +
-            sin(radians(U.CurrentLocation[1])) * sin(radians(R.ReportLocation[1]))
-        )) <= 5;
-`;
 const getNearbyDisastersQuery = `
     SELECT 
-        D.ID, 
-        D.DisasterDescription, 
-        D.OccurredLocation, 
-        D.DisasterTimeStamp, 
-        D.MaxPersonnel,
+        D.*,
         (6371 * acos(
             cos(radians(U.CurrentLocation[1])) * cos(radians(D.OccurredLocation[1])) *
             cos(radians(D.OccurredLocation[0]) - radians(U.CurrentLocation[0])) +
@@ -43,18 +30,32 @@ const getNearbyDisastersQuery = `
     ORDER BY distance_km;
 `;
 
-const getTalukDisastersQuery = `
-    SELECT 
-        D.ID, 
-        D.DisasterDescription, 
-        D.OccurredLocation, 
-        D.DisasterTimeStamp, 
-        D.MaxPersonnel
-    FROM Disaster D
-    JOIN Report R ON R.ID = D.ReportID
+const getUserReportsQuery = `
+    SELECT R.*
+    FROM Report R
     JOIN Users U ON U.Aadhar = $1
     WHERE R.taluk = U.districttalukid;
 `;
+
+const getNearbyReportsQuery = `
+    SELECT 
+    R.*,
+    ( 6371 * ACOS(
+        COS(RADIANS(U.CurrentLocation[1])) * COS(RADIANS(R.ReportedLocation[1])) *
+        COS(RADIANS(R.ReportedLocation[0]) - RADIANS(U.CurrentLocation[0])) +
+        SIN(RADIANS(U.CurrentLocation[1])) * SIN(RADIANS(R.ReportedLocation[1]))
+    )) AS distance_km
+FROM Report R
+JOIN Users U ON U.Aadhar = $1
+WHERE 
+    ( 6371 * ACOS(
+        COS(RADIANS(U.CurrentLocation[1])) * COS(RADIANS(R.ReportedLocation[1])) *
+        COS(RADIANS(R.ReportedLocation[0]) - RADIANS(U.CurrentLocation[0])) +
+        SIN(RADIANS(U.CurrentLocation[1])) * SIN(RADIANS(R.ReportedLocation[1]))
+    )) <= 5  
+ORDER BY distance_km;`;
+
+
 
 
 
@@ -96,21 +97,28 @@ const getDashboard = async (req, res) =>
         const {aadhar} = req.body
        console.log(req.body)
        
-       let nearByDisasters = await dbClient.query(getNearbyDisastersQuery, [aadhar])
-       console.log(nearByDisasters.rows)
-       response.disasterNearby = nearByDisasters.rows
-      
        let talukDisaster = await dbClient.query(getTalukDisastersQuery, [aadhar])
+       console.log('Taluk Disasters')
        console.log(talukDisaster.rows)
        response.disastersInTaluk = talukDisaster.rows
+       
+
+       let nearByDisasters = await dbClient.query(getNearbyDisastersQuery, [aadhar])
+       console.log('Nearby Disasters')
+       console.log(nearByDisasters.rows)
+       response.disasterNearby = nearByDisasters.rows
+       
       
-       let talukReport = await dbClient.query(getUserLocationQuery, [aadhar])
+       let talukReport = await dbClient.query(getUserReportsQuery, [aadhar])
+       console.log('Taluk Reports')
+       console.log(talukReport.rows)
        response.reportInTaluk = talukReport.rows
 
-       let nearbyReport = await dbClient.query(getUserReportsQuery, [aadhar])
+       let nearbyReport = await dbClient.query(getNearbyReportsQuery, [aadhar])
+       console.log('Nearby Reports')
+       console.log(nearbyReport.rows)
        response.reportsNearby = nearbyReport.rows
        
-       console.log(response.disasterNearby)
        console.log(response)
 
        res.json(response)
