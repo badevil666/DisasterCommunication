@@ -52,7 +52,7 @@ CREATE TABLE Report (
     ID SERIAL PRIMARY KEY,
     ReportDescription TEXT,
     ReportedLocation POINT,
-    reportTimeStamp TIMESTAMP,
+    reportTimeStamp TEXT,
     Video TEXT,
     ReportedUser BIGINT,
     DisasterType varchar(20),
