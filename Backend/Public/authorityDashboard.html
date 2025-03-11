@@ -270,7 +270,7 @@ async function viewDetails(index) {
         update = false
         const contentDiv = document.getElementById("content");
         contentDiv.innerHTML = ""; // Clear existing content
-
+        
 
 
         const report = result.data[index]; // Assuming response returns an array
@@ -307,7 +307,7 @@ async function viewDetails(index) {
         document.getElementById("type").value = report.disastertype;
         document.getElementById("disasterDescription").value = report.reportdescription;
         document.getElementById("occurredLocation").value = `${report.reportedlocation.x}, ${report.reportedlocation.y}`;
-        document.getElementById("disasterTimestamp").value = report.reportedtimestamp;
+        document.getElementById("disasterTimestamp").value = report.reporttimestamp;
         document.getElementById("maxPersonnel").value = '0';
         let videoContainer = document.getElementById("videoContainer");
         if (report.video) {
@@ -406,6 +406,34 @@ async function viewDisasterDetails(index) {
         console.error("Error fetching report details:", error);
     }
 }
+
+async function verifyReport() {
+        const id = document.getElementById("reportId").value; 
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+        const occurredLocation = {
+            x: parseFloat(document.getElementById("locationX").value),
+            y: parseFloat(document.getElementById("locationY").value)
+        };
+        const disasterTimeStamp = document.getElementById("timestamp").value;
+        const volunteerCount = parseInt(document.getElementById("volunteerCount").value, 10);
+
+        const requestBody = { id, title, description, occurredLocation, disasterTimeStamp, volunteerCount };
+
+        try {
+            const response = await fetch("/verifyReport", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody)
+            });
+
+            const responseData = await response.json();
+            alert("Report verified successfully!");
+        } catch (error) {
+            alert("Failed to verify report.");
+        }
+    }
+
 
 
 
