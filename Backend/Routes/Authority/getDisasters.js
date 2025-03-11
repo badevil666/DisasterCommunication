@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const dbClient = require('../../DataBase/dbClient');
 
-const getReports = async (req, res) => {
+const getDisasters = async (req, res) => {
     const { authorityId } = req.body; // Read from JSON body
     console.log(req.query)
     if (!authorityId) {
@@ -10,8 +10,9 @@ const getReports = async (req, res) => {
     }
 
     try {
-        const query = `SELECT R.* 
-                       FROM Report R 
+        const query = `SELECT D.* , R.video, R.DisasterType
+                       FROM Disaster D
+                       JOIN Report R ON D.reportid=R.id
                        JOIN districtstaluk DT ON R.taluk = DT.id 
                        JOIN Authority A ON A.District = DT.district 
                        WHERE A.ID = $1`;
@@ -26,6 +27,6 @@ const getReports = async (req, res) => {
 };
 
 
-router.post('/', getReports);
-router.get('/', getReports)
+router.post('/', getDisasters);
+router.get('/', getDisasters)
 module.exports = router;

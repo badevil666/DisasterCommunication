@@ -44,6 +44,7 @@ const getGuidelines = require('./Routes/User/getGuidelines')
 const authorityDashboard = require('./Routes/Authority/authorityDashboard')
 const authorityLogin = require('./Routes/Authority/authorityLogin')
 const getReports = require('./Routes/Authority/getReports')
+const getDisasters = require('./Routes/Authority/getDisasters')
 
 app.use('/videos', express.static(path.join(__dirname, 'Uploads')))
 app.use('/getVolunteerData', getVolunteerData)
@@ -59,7 +60,7 @@ app.use('/getGuidelines', getGuidelines)
 app.use('/authorityDashboard', authorityDashboard)
 app.use('/authorityLogin', authorityLogin)
 app.use('/getReports', getReports)
-
+app.use('/getDisasters', getDisasters)
 app.get('/', (req, res) => {
     //res.send("Hello World. God is the ultimate sourece of wisdom")
     res.render('home')
