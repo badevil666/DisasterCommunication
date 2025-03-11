@@ -108,8 +108,8 @@ router.post('/', async (req, res) =>
     await videoFile.mv(uploadPath);
     let taluk = await getTaluk(locationX, locationY)
     console.log([description, locationX, locationY, fileName, aadhar, type, taluk])
-
-    await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype, taluk) values($1, POINT($2, $3), $4, $5, $6, $7)', [description, locationX, locationY, fileName, aadhar, type, taluk])
+    let reportedTimeStamp = Date()
+    await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype, taluk, reportTimeStamp) values($1, POINT($2, $3), $4, $5, $6, $7)', [description, locationX, locationY, fileName, aadhar, type, taluk, reportedTimeStamp])
     res.json({ message: 'Upload successful', file: videoFile.name });
   }
   catch (err)
