@@ -89,7 +89,9 @@ async function getTaluk(x, y)
 router.post('/', async (req, res) =>
 {
   console.log('📥 Incoming request headers:', req.body.json);
-
+    let response = {
+        success : false
+    }
   console.log('📂 Files received:', req.files); // Should log { video: {...} } if working
   const {aadhar, locationX, locationY, type, description} = JSON.parse(req.body.json)
 
@@ -110,7 +112,8 @@ router.post('/', async (req, res) =>
     console.log([description, locationX, locationY, fileName, aadhar, type, taluk])
     let reportedTimeStamp = Date()
     await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype, taluk, reporttimestamp) values($1, POINT($2, $3), $4, $5, $6, $7, $8)', [description, locationX, locationY, fileName, aadhar, type, taluk, reportedTimeStamp])
-    res.json({ message: 'Upload successful', file: videoFile.name });
+    response.success = true
+    res.json(response);
   }
   catch (err)
   {
