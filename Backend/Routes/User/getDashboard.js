@@ -55,7 +55,10 @@ WHERE
     )) <= 5  
 ORDER BY distance_km;`;
 
-
+const volunteerCountQuery = `SELECT COUNT(*) AS volunteer_count
+FROM DisasterVolunteer
+WHERE DisasterID = $1
+`
 
 
 
@@ -92,7 +95,8 @@ const getDashboard = async (req, res) =>
         disastersInTaluk : null,
         disasterNearby : null,
         reportInTaluk : null,
-        reportsNearby : null
+        reportsNearby : null,
+        volunteerCount : {}
        } 
         const {aadhar} = req.body
        console.log(req.body)
@@ -119,6 +123,20 @@ const getDashboard = async (req, res) =>
        console.log(nearbyReport.rows)
        response.reportsNearby = nearbyReport.rows
        
+       await Promise.all(
+        talukDisaster.rows.map(async (disaster) => {
+            let count = await dbClient.query(volunteerCountQuery, [disaster.id]);
+            response.volunteerCount[`${disaster.id}`] = count.rows[0].volunteer_count;
+        })
+        );
+
+        await Promise.all(
+            nearByDisasters.rows.map(async (disaster) => {
+                let count = await dbClient.query(volunteerCountQuery, [disaster.id]);
+                response.volunteerCount[`${disaster.id}`] = count.rows[0].volunteer_count;
+            })
+            );
+
        console.log(response)
 
        res.json(response)
