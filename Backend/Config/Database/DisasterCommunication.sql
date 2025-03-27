@@ -15,6 +15,8 @@ CREATE TABLE districtstaluk(
     taluk varchar(20)
 );
 
+
+
 CREATE TABLE Users (
     Aadhar BIGINT CHECK(Aadhar > 99999999999 AND Aadhar < 1000000000000) PRIMARY KEY,
     UserName VARCHAR(25),
@@ -46,6 +48,13 @@ CREATE TABLE UserSkills (
     PRIMARY KEY (Aadhar, skill),
     FOREIGN KEY (Aadhar) REFERENCES Users(Aadhar) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (skill) REFERENCES skills(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE DisasterSkills (
+    disasterType TEXT,
+    SkillID INT,
+    PRIMARY KEY (DisasterType, SkillID),
+    FOREIGN KEY (SkillID) REFERENCES Skills(ID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Report (
@@ -211,6 +220,74 @@ INSERT INTO skills (id, skill) VALUES
 (9, 'Psychological First Aid'),
 (10, 'Radio Communication');
 
+INSERT INTO DisasterSkills (disasterType, SkillID) VALUES
+-- Earthquake
+('Earthquake', 1),  -- Medical Assistance
+('Earthquake', 2),  -- CPR & First Aid
+('Earthquake', 4),  -- Search and Rescue
+('Earthquake', 6),  -- Disaster Assessment
+
+-- Flood
+('Flood', 1),  -- Medical Assistance
+('Flood', 2),  -- CPR & First Aid
+('Flood', 3),  -- Swimming
+('Flood', 4),  -- Search and Rescue
+('Flood', 7),  -- Emergency Shelter Management
+('Flood', 8),  -- Logistics and Supply Chain
+
+-- Wildfire
+('Wildfire', 1),  -- Medical Assistance
+('Wildfire', 5),  -- Firefighting
+('Wildfire', 6),  -- Disaster Assessment
+('Wildfire', 9),  -- Psychological First Aid
+
+-- Hurricane
+('Hurricane', 1),  -- Medical Assistance
+('Hurricane', 4),  -- Search and Rescue
+('Hurricane', 7),  -- Emergency Shelter Management
+('Hurricane', 8),  -- Logistics and Supply Chain
+('Hurricane', 10), -- Radio Communication
+
+-- Tornado
+('Tornado', 1),  -- Medical Assistance
+('Tornado', 4),  -- Search and Rescue
+('Tornado', 6),  -- Disaster Assessment
+('Tornado', 7),  -- Emergency Shelter Management
+('Tornado', 9),  -- Psychological First Aid
+
+-- Tsunami
+('Tsunami', 1),  -- Medical Assistance
+('Tsunami', 2),  -- CPR & First Aid
+('Tsunami', 3),  -- Swimming
+('Tsunami', 4),  -- Search and Rescue
+
+-- Landslide
+('Landslide', 1),  -- Medical Assistance
+('Landslide', 4),  -- Search and Rescue
+('Landslide', 6),  -- Disaster Assessment
+('Landslide', 7),  -- Emergency Shelter Management
+('Landslide', 10), -- Radio Communication
+
+-- Pandemic
+('Pandemic', 1),  -- Medical Assistance
+('Pandemic', 2),  -- CPR & First Aid
+('Pandemic', 8),  -- Logistics and Supply Chain
+('Pandemic', 9),  -- Psychological First Aid
+
+-- Drought
+('Drought', 8),  -- Logistics and Supply Chain
+('Drought', 9),  -- Psychological First Aid
+
+-- Industrial Disaster
+('Industrial Disaster', 1), -- Medical Assistance
+('Industrial Disaster', 5), -- Firefighting
+('Industrial Disaster', 6), -- Disaster Assessment
+('Industrial Disaster', 8), -- Logistics and Supply Chain
+('Industrial Disaster', 10) -- Radio Communication
+;
+
+
+
 insert into users VALUES
 (100000000000, 'Tom Cherian', '2003-05-27', 'M', 'ctom71718@gmail.com', 8590212377, POINT(9.9406, 76.2653), 39),
 (100000000001, 'Jithin Raj', '2002-05-27', 'M', 'jithinRaj@mail.com', 1000000000, POINT(9.6287383, 76.6455326), 26),
@@ -239,12 +316,12 @@ insert into userskills VALUES
 
 
 insert into report(ReportDescription, ReportedLocation, Video, ReportedUser, DisasterType, taluk) VALUES
-('Building on fire', POINT(9.458, 75.25), 'video.mp4', 100000000000, 'Fire Accident', 1),
-('Landslide', POINT(9.458, 75.25), 'video.mp4', 100000000000, 'Landslide', 2),
-('Bridge Collapse', POINT(9.458, 75.25), 'video.mp4', 100000000001, 'Infrastructure', 39),
-('House on fire', POINT(9.458, 75.25), 'video.mp4', 100000000001, 'Fire Accident', 4),
-('Severe Flood', POINT(9.458, 75.25), 'video.mp4', 100000000002, 'Flood', 5),
-('Building on fire', POINT(9.458, 75.25), 'video.mp4', 100000000002, 'Fire Accident', 6);
+('Building on fire', POINT(9.458, 75.25), 'video.mp4', 100000000000, 'Earthquake', 1),
+('Landslide', POINT(9.458, 75.25), 'video.mp4', 100000000000, 'Flood', 2),
+('Bridge Collapse', POINT(9.458, 75.25), 'video.mp4', 100000000001, 'Wildfire', 39),
+('House on fire', POINT(9.458, 75.25), 'video.mp4', 100000000001, 'Hurricane', 4),
+('Severe Flood', POINT(9.458, 75.25), 'video.mp4', 100000000002, 'Tornado', 5),
+('Building on fire', POINT(9.458, 75.25), 'video.mp4', 100000000002, 'Tsunami', 6);
 
 
 insert into disaster(title, DisasterDescription, occurredLocation, DisasterTimeStamp, ReportPath, MaxPersonnel, ReportID) VALUES
@@ -259,7 +336,6 @@ insert into disaster(title, DisasterDescription, occurredLocation, DisasterTimeS
 
 
 insert into disastervolunteer VALUES
-(100000000000, 3),
 (100000000000, 4),
 (100000000000, 5),
 (100000000001, 1),
@@ -420,72 +496,6 @@ INSERT INTO DisasterGuidelines (DisasterID, guideline, IssuedTime, AuthorityID) 
 (6, 'Do not panic; stay low to avoid inhaling smoke.', NOW(), 'IO_Kottayam'),
 (6, 'Call emergency services and provide accurate location details.', NOW(), 'IO_Kottayam'),
 (6, 'Avoid re-entering the building until declared safe.', NOW(), 'IO_Kottayam');
-
-CREATE OR REPLACE FUNCTION getNearbyDisaster(_aadhar BIGINT)  
-RETURNS TABLE(
-    ID INT, 
-    DisasterDescription TEXT, 
-    OccurredLocation POINT, 
-    DisasterTimeStamp TIMESTAMP, 
-    MaxPersonnel INT
-)    
-LANGUAGE plpgsql
-AS $$
-DECLARE 
-    user_location POINT;  -- Renamed to avoid confusion with table names
-BEGIN
-    -- Fetch user's location
-    SELECT currentLocation INTO user_location
-    FROM Users 
-    WHERE Aadhar = _aadhar;  
-
-    -- Check if location is NULL (to avoid errors)
-    IF user_location IS NULL THEN
-        RAISE EXCEPTION 'No user found with Aadhar % or location is NULL', _aadhar;
-    END IF;
-
-    -- Return disasters within a 10-unit radius
-    RETURN QUERY 
-    SELECT d.ID, d.DisasterDescription, d.OccurredLocation, d.DisasterTimeStamp, d.MaxPersonnel
-    FROM Disaster AS d
-    WHERE sqrt((user_location[0] - d.OccurredLocation[0])^2 + 
-               (user_location[1] - d.OccurredLocation[1])^2) <= 10; 
-
-END;
-$$;
-
-
-CREATE OR REPLACE FUNCTION getTalukDisaster(_aadhar BIGINT)  
-RETURNS TABLE(
-    ID INT, 
-    DisasterDescription TEXT, 
-    OccurredLocation POINT, 
-    DisasterTimeStamp TIMESTAMP, 
-    MaxPersonnel INT
-)    
-LANGUAGE plpgsql
-AS $$
-DECLARE 
-    _taluk int; -- Renamed to avoid confusion with table names
-BEGIN
-    -- Fetch user's location
-    SELECT districttalukid INTO _taluk
-    FROM Users 
-    WHERE Aadhar = _aadhar;  
-
-    -- Check if location is NULL (to avoid errors)
-    IF _taluk IS NULL THEN
-        RAISE EXCEPTION 'No user found with Aadhar % or location is NULL', _aadhar;
-    END IF;
-
-    -- Return disasters within a 10-unit radius
-    RETURN QUERY 
-    SELECT d.ID, d.DisasterDescription, d.OccurredLocation, d.DisasterTimeStamp, d.MaxPersonnel
-    FROM Disaster AS d join Report as r on r.id = d.ReportID
-    WHERE r.taluk = _taluk; 
-
-END;
-$$;
 
 
 

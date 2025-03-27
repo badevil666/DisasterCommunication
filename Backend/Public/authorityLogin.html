@@ -75,7 +75,12 @@
             if (result.redirect) {
                 localStorage.setItem('authorityId', result.authorityId); // Store ID in localStorage
                 window.location.href = result.redirect; // Redirect if URL is provided
-            } else {
+            } 
+            else if(!result.success)
+            {
+                alert("Invalid Credentials")
+            }
+            else {
                 errorMessage.style.display = "block"; // Show error if no redirect
                 errorMessage.textContent = "Invalid ID or password.";
             }

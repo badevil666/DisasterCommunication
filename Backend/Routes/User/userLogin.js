@@ -47,6 +47,7 @@ const userLogin = async(req, res) =>
     const isPasswordCorrect = await bcrypt.compare(password, result.rows[0].hashedpassword);
     if(isPasswordCorrect)
     {
+      await dbClient.query('update users set firebasetoken = $1 where aadhar = $2', [firebaseToken, aadhar])
       userData = (await dbClient.query('select * from users where aadhar = $1', [aadhar])).rows;
       disasterData = (await dbClient.query('select * from disastervolunteer as dv join disaster as d on dv.disasterid = d.id where aadhar = $1', [aadhar])).rows;
       userSkills = (await dbClient.query('select skill from userskills where aadhar = $1', [aadhar])).rows

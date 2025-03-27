@@ -14,6 +14,10 @@ const authorityLogin = async (req, res) => {
         console.log(result)
         res.json({redirect : '/authorityDashboard', authorityId : id})
     }
+    else
+    {
+        res.json({success : false})
+    }
 }
 
 router.post('/', authorityLogin)

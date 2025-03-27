@@ -4,7 +4,7 @@ const fs = require('fs');
 const dbClient = require('../../DataBase/dbClient')
 const axios = require('axios');
 const router = express.Router();
-
+const {sendMulticastNotification} = require('../../Config/firebase/firebaseNotifications')
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, '../../Uploads/');
 console.log(uploadDir)
@@ -12,7 +12,14 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-
+const getQuery = `
+            SELECT u.firebaseToken,
+                   sqrt(power((u.CurrentLocation[0] - $1), 2) + power((u.CurrentLocation[1] - $2), 2)) AS approx_distance
+            FROM Users u
+            WHERE u.districttalukid = $3  -- Ensure users are in the same Taluk
+            AND sqrt(power((u.CurrentLocation[0] - $1), 2) + power((u.CurrentLocation[1] - $2), 2)) <= $4  -- Adjust threshold
+            ORDER BY approx_distance;
+        `;
 const districtTalukMap = {
     'Thiruvananthapuram': { 'Neyyattinkara': 1, 'Kattakkada': 2, 'Nedumangad': 3, 'Thiruvananthapuram': 4, 'Chirayinkeezhu': 5, 'Varkala': 6 },
     'Kollam': { 'Kollam': 7, 'Kunnathoor': 8, 'Karunagappally': 9, 'Kottarakkara': 10, 'Punalur': 11, 'Pathanapuram': 12 },
@@ -84,6 +91,18 @@ async function getTaluk(x, y)
     return await fetchAndPrintTalukNumber(x, y);
 }
 
+function getFormattedTimestamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Ensure two digits
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 
 // Define the upload endpoint
 router.post('/', async (req, res) =>
@@ -94,7 +113,7 @@ router.post('/', async (req, res) =>
     }
   console.log('📂 Files received:', req.files); // Should log { video: {...} } if working
   const {aadhar, locationX, locationY, type, description} = JSON.parse(req.body.json)
-
+    console.log(JSON.parse(req.body.json))
   if (!req.files || !req.files.video)
   {
     return res.status(400).json({ message: 'No video file uploaded' });
@@ -110,8 +129,15 @@ router.post('/', async (req, res) =>
     await videoFile.mv(uploadPath);
     let taluk = await getTaluk(locationX, locationY)
     console.log([description, locationX, locationY, fileName, aadhar, type, taluk])
-    let reportedTimeStamp = Date()
+    let reportedTimeStamp = getFormattedTimestamp()
     await dbClient.query('insert into report(reportdescription, reportedlocation, video, reporteduser, disastertype, taluk, reporttimestamp) values($1, POINT($2, $3), $4, $5, $6, $7, $8)', [description, locationX, locationY, fileName, aadhar, type, taluk, reportedTimeStamp])
+    let tokens = await dbClient.query(getQuery, [locationX, locationY, taluk, 0.05]);
+    
+    if(tokens.rows)
+    {
+      console.log(tokens.rows);
+      sendMulticastNotification(tokens.rows.map(row => row.firebasetoken), type, description)
+    }
     response.success = true
     res.json(response);
   }
