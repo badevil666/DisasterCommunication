@@ -32,9 +32,12 @@
 <!-- <body class="bg-white"> -->
     <body class="darkTheme">
 
-    <header class="bg-primary text-white p-4">
-        <h2 class="text-2xl font-bold">Disaster Communication</h2>
-    </header>
+        <header class="bg-primary text-white p-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold">Disaster Communication</h2>
+                <button id="refreshButton" class="bg-white text-primary py-2 px-4 rounded hover:bg-secondary hover:text-white transition">Refresh</button>
+            </div>
+        </header>
 
     <div class="container mx-auto flex p-4" style="background-color: #333;">
         <aside class="w-1/4 bg-white border border-gray-200 rounded-lg shadow-sm p-4">
@@ -53,52 +56,51 @@
     <script>
         const apiBaseURL = "http://localhost:8000"; // Replace with actual backend URL
         let result;
+        let currentView = "initial"; // Possible values: "initial", "reports", "disasters", "reportDetails", "disasterDetails"
+let currentIndex = null; // To store the index for detail views
 
         // Function to fetch reports from the backend
         async function fetchReports() {
-            const authorityId = localStorage.getItem("authorityId"); // Get from localStorage
+    const authorityId = localStorage.getItem("authorityId");
+    if (!authorityId) {
+        console.error("No authorityId found in localStorage.");
+        return;
+    }
+    try {
+        const response = await fetch(`${apiBaseURL}/getReports`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ authorityId })
+        });
+        result = await response.json();
+        displayReports(result.data);
+        currentView = "reports"; // Set current view
+        currentIndex = null; // Reset index
+    } catch (error) {
+        console.error("Error fetching reports:", error);
+    }
+}
 
-            if (!authorityId) {
-                console.error("No authorityId found in localStorage.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiBaseURL}/getReports`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ authorityId }) // Send in JSON payload
-                });
-
-                result = await response.json();
-                displayReports(result.data); // Display fetched reports
-            } catch (error) {
-                console.error("Error fetching reports:", error);
-            }
-        }
-
-        async function fetchDisasters() {
-            const authorityId = localStorage.getItem("authorityId"); // Get from localStorage
-
-            if (!authorityId) {
-                console.error("No authorityId found in localStorage.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`${apiBaseURL}/getDisasters`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ authorityId }) // Send in JSON payload
-                });
-
-                result = await response.json();
-                displayDisasters(result.data); // Display fetched disasters
-            } catch (error) {
-                console.error("Error fetching disasters:", error);
-            }
-        }
-
+async function fetchDisasters() {
+    const authorityId = localStorage.getItem("authorityId");
+    if (!authorityId) {
+        console.error("No authorityId found in localStorage.");
+        return;
+    }
+    try {
+        const response = await fetch(`${apiBaseURL}/getDisasters`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ authorityId })
+        });
+        result = await response.json();
+        displayDisasters(result.data);
+        currentView = "disasters"; // Set current view
+        currentIndex = null; // Reset index
+    } catch (error) {
+        console.error("Error fetching disasters:", error);
+    }
+}
         // Function to display reports
         function displayReports(reports) {
             const contentDiv = document.getElementById("content");
@@ -242,14 +244,15 @@
                         <button type="button" class='backButton w-full bg-gray-200 py-2 rounded hover:bg-gray-300 transition' onclick="fetchReports()">Back to Reports</button>
                     </form>
                 </div>`;
-
+                currentView = "reportDetails";
+currentIndex = index;
                 // Populate the form with report details
                 document.getElementById("title").value = report.disastertype;
                 document.getElementById("type").value = report.reportdescription;
                 document.getElementById("occurredLocation").value = `${report.reportedlocation.x}, ${report.reportedlocation.y}`;
-                document.getElementById("disasterTimestamp").value = report.reporttimestamp;
+                document.getElementById("disasterTimestamp").value = `${report.reporttimestamp}`;
                 document.getElementById("maxPersonnel").value = '0';
-
+              
                 // Display video if available
                 let videoContainer = document.getElementById("videoContainer");
                 if (report.video) {
@@ -267,155 +270,254 @@
         }
 
         async function viewDisasterDetails(index) {
-            try {
-                const contentDiv = document.getElementById("content");
-                contentDiv.innerHTML = ""; // Clear existing content
+    try {
+        const contentDiv = document.getElementById("content");
+        contentDiv.innerHTML = ""; // Clear existing content
 
-                const disaster = result.data[index]; // Assuming response returns an array
-                contentDiv.innerHTML = `
-                <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                    <form id="disasterForm">
-                        <h2 class="text-2xl font-bold mb-4">Disaster Report</h2>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div class="form-group">
-                                <label for="title" class="block font-semibold mb-1">Title:</label>
-                                <input type="text" id="title" name="title" required class="w-full p-2 border border-gray-300 rounded bg-white">
-                            </div>
-                            <div class="form-group">
-                                <label for="type" class="block font-semibold mb-1">Type:</label>
-                                <input type="text" id="type" name="type" required class="w-full p-2 border border-gray-300 rounded bg-white">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div class="form-group">
-                                <label for="disasterDescription" class="block font-semibold mb-1">Description:</label>
-                                <textarea id="disasterDescription" name="disasterDescription" required class="w-full p-2 border border-gray-300 rounded bg-white"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="occurredLocation" class="block font-semibold mb-1">Location:</label>
-                                <input type="text" id="occurredLocation" name="occurredLocation" required class="w-full p-2 border border-gray-300 rounded bg-white">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div class="form-group">
-                                <label for="disasterTimestamp" class="block font-semibold mb-1">Timestamp:</label>
-                                <input type="text" id="disasterTimestamp" name="disasterTimestamp" required class="w-full p-2 border border-gray-300 rounded bg-white">
-                            </div>
-                            <div class="form-group">
-                                <label for="maxPersonnel" class="block font-semibold mb-1">Max Personnel:</label>
-                                <input type="number" id="maxPersonnel" name="maxPersonnel" required class="w-full p-2 border border-gray-300 rounded bg-white">
-                            </div>
-                        </div>
-
-                        <div class="skills-section mb-4">
-                            <h3 class="text-lg font-semibold mb-2">Select Skills:</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="1" name="skills" class="mr-2">
-                                    Medical Assistance
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="2" name="skills" class="mr-2">
-                                    CPR & First Aid
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="3" name="skills" class="mr-2">
-                                    Swimming
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="4" name="skills" class="mr-2">
-                                    Search and Rescue
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="5" name="skills" class="mr-2">
-                                    Firefighting
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="6" name="skills" class="mr-2">
-                                    Disaster Assessment
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="7" name="skills" class="mr-2">
-                                    Emergency Shelter Management
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="8" name="skills" class="mr-2">
-                                    Logistics and Supply Chain
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="9" name="skills" class="mr-2">
-                                    Psychological First Aid
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" value="10" name="skills" class="mr-2">
-                                    Radio Communication
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div id="videoContainer"></div>
-                        <br>
-                        <button type="button" onclick="verifyReport(${index})" class="w-full bg-primary text-white py-2 rounded hover:bg-secondary transition">Update</button>
-                        <button type="button" class='backButton w-full bg-gray-200 py-2 rounded hover:bg-gray-300 transition' onclick="fetchReports()">Back to Disasters</button>
-                    </form>
-                </div>
-
-                <div class="mt-6 border-t border-gray-200 pt-4">
-                    <h3 class="text-xl font-bold mb-2">Citizen Guidelines</h3>
-                    <div id="guidelinesSection" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">
-                        <div id="guidelinesList">
-                            <ul id="glList"></ul>  
-                        </div>
-                        <label for="newGuideline" class="block font-semibold mb-1">Add New Citizen Guideline:</label>
-                        <input type="text" id="newGuideline" name="newGuideline" class="w-full p-2 border border-gray-300 rounded bg-white mb-2">
-                        <button type="button" onclick="addGuideline(${disaster.id})" class="w-full bg-primary text-white py-2 rounded hover:bg-secondary transition">Add Guideline</button>
+        const disaster = result.data[index]; // Assuming response returns an array
+        contentDiv.innerHTML = `
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <form id="disasterForm">
+                <h2 class="text-2xl font-bold mb-4">Disaster Report</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="form-group">
+                        <label for="title" class="block font-semibold mb-1">Title:</label>
+                        <input type="text" id="title" name="title" required class="w-full p-2 border border-gray-300 rounded bg-white">
                     </div>
-
-                    <h3 class="text-xl font-bold mb-2">Volunteer Guidelines</h3>
-                    <div id="volunteerGuidelinesSection" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                        <div id="volunteerGuidelinesList">
-                            <ul id="vgList"></ul>  
-                        </div>
-                        <label for="newVolunteerGuideline" class="block font-semibold mb-1">Add New Volunteer Guideline:</label>
-                        <input type="text" id="newVolunteerGuideline" name="newVolunteerGuideline" class="w-full p-2 border border-gray-300 rounded bg-white mb-2">
-                        <button type="button" onclick="addVolunteerGuideline(${disaster.id})" class="w-full bg-primary text-white py-2 rounded hover:bg-secondary transition">Add Volunteer Guideline</button>
+                    <div class="form-group">
+                        <label for="type" class="block font-semibold mb-1">Type:</label>
+                        <input type="text" id="type" name="type" required class="w-full p-2 border border-gray-300 rounded bg-white">
                     </div>
                 </div>
-                `;
 
-                // Populate the form with disaster details
-                document.getElementById("title").value = disaster.title;
-                document.getElementById("type").value = disaster.disastertype;
-                document.getElementById("disasterDescription").value = disaster.disasterdescription;
-                document.getElementById("occurredLocation").value = `${disaster.occurredlocation.x}, ${disaster.occurredlocation.y}`;
-                document.getElementById("disasterTimestamp").value = disaster.disastertimestamp;
-                document.getElementById("maxPersonnel").value = '0';
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="form-group">
+                        <label for="disasterDescription" class="block font-semibold mb-1">Description:</label>
+                        <textarea id="disasterDescription" name="disasterDescription" required class="w-full p-2 border border-gray-300 rounded bg-white"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="occurredLocation" class="block font-semibold mb-1">Location:</label>
+                        <input type="text" id="occurredLocation" name="occurredLocation" required class="w-full p-2 border border-gray-300 rounded bg-white">
+                    </div>
+                </div>
 
-                // Display video if available
-                let videoContainer = document.getElementById("videoContainer");
-                if (disaster.video) {
-                    videoContainer.innerHTML = `
-                        <video controls style="width: 100%; border-radius: 5px;">
-                            <source src="${apiBaseURL}/videos/${disaster.video}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>`;
-                } else {
-                    videoContainer.innerHTML = `<p>No video available.</p>`;
-                }
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="form-group">
+                        <label for="disasterTimestamp" class="block font-semibold mb-1">Timestamp:</label>
+                        <input type="text" id="disasterTimestamp" name="disasterTimestamp" required class="w-full p-2 border border-gray-300 rounded bg-white">
+                    </div>
+                    <div class="form-group">
+                        <label for="maxPersonnel" class="block font-semibold mb-1">Max Personnel:</label>
+                        <input type="number" id="maxPersonnel" name="maxPersonnel" required class="w-full p-2 border border-gray-300 rounded bg-white">
+                    </div>
+                </div>
 
-                // Load citizen guidelines
-                loadCitizenGuidelines(disaster.id);
-                // Load volunteer guidelines
-                loadVolunteerGuidelines(disaster.id);
-            } catch (error) {
-                console.error("Error fetching disaster details:", error);
-            }
+                <div class="skills-section mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Select Skills:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" value="1" name="skills" class="mr-2"> Medical Assistance
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="2" name="skills" class="mr-2"> CPR & First Aid
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="3" name="skills" class="mr-2"> Swimming
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="4" name="skills" class="mr-2"> Search and Rescue
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="5" name="skills" class="mr-2"> Firefighting
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="6" name="skills" class="mr-2"> Disaster Assessment
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="7" name="skills" class="mr-2"> Emergency Shelter Management
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="8" name="skills" class="mr-2"> Logistics and Supply Chain
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="9" name="skills" class="mr-2"> Psychological First Aid
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" value="10" name="skills" class="mr-2"> Radio Communication
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="videoContainer"></div>
+                <br>
+                <button type="button" onclick="verifyReport(${index})" class="w-full bg-primary text-white py-2 rounded hover:bg-secondary transition">Update</button>
+                <button type="button" class="backButton w-full bg-gray-200 py-2 rounded hover:bg-gray-300 transition" onclick="fetchDisasters()">Back to Disasters</button>
+            </form>
+        </div>
+
+        <div class="mt-6 boreder-t border-gray-200 pt-4">
+            <h3 class="text-xl font-bold mb-2">Citizen Guidelines</h3>
+            <div id="guidelinesSection" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">
+                <div id="guidelinesList">
+                    <ul id="glList"></ul>  
+                </div>
+                <label for="newGuideline" class="block font-semibold mb-1">Add New Citizen Guideline:</label>
+                <input type="text" id="newGuideline" name="newGuideline" class="w-full p-2 border border-gray-300 rounded bg-white mb-2">
+                <button type="button" onclick="addGuideline(${disaster.id})" class="w-full bg-primary text-white py-2 rounded hover:bg-secondary transition">Add Guideline</button>
+            </div>
+
+            <h3 class="text-xl font-bold mb-2">Volunteer Guidelines</h3>
+            <div id="volunteerGuidelinesSection" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">
+                <div id="volunteerGuidelinesList">
+                    <ul id="vgList"></ul>  
+                </div>
+                <label for="newVolunteerGuideline" class="block font-semibold mb-1">Add New Volunteer Guideline:</label>
+                <input type="text" id="newVolunteerGuideline" name="newVolunteerGuideline" class="w-full p-2 border border-gray-300 rounded bg-white mb-2">
+                <button type="button" onclick="addVolunteerGuideline(${disaster.id})" class="w-full bg-primary text-white py-2 rounded hover:bg-secondary transition">Add Volunteer Guideline</button>
+            </div>
+
+            <h3 class="text-xl font-bold mb-2">Users Nearby a Disaster</h3>
+            <div id="nearbyUsersSection" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">
+                <div id="nearbyUsersList">
+                    <ul id="nuList"></ul>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold mb-2">Volunteers Who Have Joined</h3>
+            <div id="volunteersSection" class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                <div id="volunteersList">
+                    <ul id="vList"></ul>
+                </div>
+            </div>
+        </div>
+        `;
+        currentView = "disasterDetails";
+        currentIndex = index;
+        // Populate the form with disaster details
+        document.getElementById("title").value = disaster.title;
+        document.getElementById("type").value = disaster.disastertype;
+        document.getElementById("disasterDescription").value = disaster.disasterdescription;
+        document.getElementById("occurredLocation").value = `${disaster.occurredlocation.x}, ${disaster.occurredlocation.y}`;
+        document.getElementById("disasterTimestamp").value = disaster.disastertimestamp;
+        document.getElementById("maxPersonnel").value = '0';
+
+        // Display video if available
+        let videoContainer = document.getElementById("videoContainer");
+        if (disaster.video) {
+            videoContainer.innerHTML = `
+                <video controls style="width: 100%; border-radius: 5px;">
+                    <source src="${apiBaseURL}/videos/${disaster.video}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+        } else {
+            videoContainer.innerHTML = `<p>No video available.</p>`;
         }
 
-        async function verifyReport(index) {
+        // Load existing data
+        loadCitizenGuidelines(disaster.id);
+        loadVolunteerGuidelines(disaster.id);
+        loadNearbyUsers(disaster.id); // Load nearby users
+        loadVolunteers(disaster.id);  // Load volunteers
+    } catch (error) {
+        console.error("Error fetching disaster details:", error);
+    }
+}
+
+function refreshCurrentView() {
+    switch (currentView) {
+        case "reports":
+            fetchReports();
+            break;
+        case "disasters":
+            fetchDisasters();
+            break;
+        case "reportDetails":
+            if (currentIndex !== null) {
+                viewDetails(currentIndex);
+            } else {
+                console.error("No index available for report details refresh.");
+                fetchReports(); // Fallback to reports list
+            }
+            break;
+        case "disasterDetails":
+            if (currentIndex !== null) {
+                viewDisasterDetails(currentIndex);
+            } else {
+                console.error("No index available for disaster details refresh.");
+                fetchDisasters(); // Fallback to disasters list
+            }
+            break;
+        case "initial":
+        default:
+            document.getElementById("content").innerHTML = `<p class="text-center text-gray-500">Click a button to load data.</p>`;
+            break;
+    }
+}
+
+// Attach the refresh function to the button
+document.getElementById("refreshButton").addEventListener("click", refreshCurrentView);
+// Function to load users nearby a disaster
+async function loadNearbyUsers(disasterID) {
+    try {
+        let response = await fetch(`${apiBaseURL}/getNearbyUsers`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ disasterID }) // Send disasterID in JSON payload
+        });
+
+        response = await response.json();
+        let nuList = document.getElementById("nuList");
+        nuList.innerHTML = ""; // Clear previous content
+
+        if (!response.users || response.users.length === 0) {
+            nuList.innerHTML = '<p class="no-users">No users nearby found.</p>';
+        } else {
+            for (let user of response.users) {
+                let userItem = `
+                    <li class="user-item">
+                        <p class="user-text">👤 ${user.username} (Phone: ${user.phoneno} km)</p>
+                    </li>`;
+                nuList.insertAdjacentHTML("beforeend", userItem);
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching nearby users:", error);
+        document.getElementById("nuList").innerHTML = '<p class="text-red-500">Error loading nearby users.</p>';
+    }
+}
+
+// Function to load volunteers who have joined
+async function loadVolunteers(disasterID) {
+    try {
+        let response = await fetch(`${apiBaseURL}/getJoinedVolunteers`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ disasterID }) // Send disasterID in JSON payload
+        });
+
+        response = await response.json();
+        let vList = document.getElementById("vList");
+        vList.innerHTML = ""; // Clear previous content
+
+        if (!response.users || response.users.length === 0) {
+            vList.innerHTML = '<p class="no-volunteers">No volunteers have joined yet.</p>';
+        } else {
+            for (let volunteer of response.users) {
+                let volunteerItem = `
+                    <li class="volunteer-item">
+                        <p class="volunteer-text">👤 ${volunteer.username}</p>
+                        <p class="volunteer-skills">🛠️ Skills: ${volunteer.skills}</p>
+                    </li>`;
+                vList.insertAdjacentHTML("beforeend", volunteerItem);
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching volunteers:", error);
+        document.getElementById("vList").innerHTML = '<p class="text-red-500">Error loading volunteers.</p>';
+    }
+}
+async function verifyReport(index) {
             const report = result.data[index]; // Get the correct report from `result.data`
             const id = report.id; // Assuming `id` is the unique identifier
             const title = document.getElementById("title").value;

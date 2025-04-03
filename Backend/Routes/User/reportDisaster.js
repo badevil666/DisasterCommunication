@@ -17,7 +17,7 @@ const getQuery = `
                    sqrt(power((u.CurrentLocation[0] - $1), 2) + power((u.CurrentLocation[1] - $2), 2)) AS approx_distance
             FROM Users u
             WHERE u.districttalukid = $3  -- Ensure users are in the same Taluk
-            AND sqrt(power((u.CurrentLocation[0] - $1), 2) + power((u.CurrentLocation[1] - $2), 2)) <= $4  -- Adjust threshold
+            OR sqrt(power((u.CurrentLocation[0] - $1), 2) + power((u.CurrentLocation[1] - $2), 2)) <= $4  -- Adjust threshold
             ORDER BY approx_distance;
         `;
 const districtTalukMap = {
