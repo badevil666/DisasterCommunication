@@ -26,6 +26,6 @@ const getContactDetails = async (req, res) =>
     }
 }
 
-router.post('/', getContactDetails)
+router.get('/', getContactDetails)
 
 module.exports = router
