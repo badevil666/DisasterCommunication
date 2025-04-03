@@ -5,14 +5,21 @@ const dbClient = require('../../DataBase/dbClient');
 const getQuery = `SELECT 
     u.UserName, 
     u.PhoneNo,
-    sqrt(power((u.CurrentLocation[0] - d.occurredLocation[0]), 2) + 
-         power((u.CurrentLocation[1] - d.occurredLocation[1]), 2)) AS approx_distance
+    ( 6371 * acos(
+        cos(radians(d.occurredLocation[1])) * cos(radians(u.CurrentLocation[1])) * 
+        cos(radians(u.CurrentLocation[0]) - radians(d.occurredLocation[0])) + 
+        sin(radians(d.occurredLocation[1])) * sin(radians(u.CurrentLocation[1]))
+    )) AS approx_distance_km
 FROM Users u
 JOIN Disaster d ON d.ID = $1  -- Supply Disaster ID here
 WHERE 
-    sqrt(power((u.CurrentLocation[0] - d.occurredLocation[0]), 2) + 
-         power((u.CurrentLocation[1] - d.occurredLocation[1]), 2)) <= 10  -- Fixed radius of 10 km
-ORDER BY approx_distance;
+    ( 6371 * acos(
+        cos(radians(d.occurredLocation[1])) * cos(radians(u.CurrentLocation[1])) * 
+        cos(radians(u.CurrentLocation[0]) - radians(d.occurredLocation[0])) + 
+        sin(radians(d.occurredLocation[1])) * sin(radians(u.CurrentLocation[1]))
+    )) <= 10  -- 10 km radius
+ORDER BY approx_distance_km;
+
 `;
 
 
