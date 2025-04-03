@@ -15,7 +15,11 @@ CREATE TABLE districtstaluk(
     taluk varchar(20)
 );
 
-
+CREATE TABLE contacts(
+    position text,
+    telephone text primary key,
+    district varchar(30)
+);
 
 CREATE TABLE Users (
     Aadhar BIGINT CHECK(Aadhar > 99999999999 AND Aadhar < 1000000000000) PRIMARY KEY,
@@ -50,12 +54,7 @@ CREATE TABLE UserSkills (
     FOREIGN KEY (skill) REFERENCES skills(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE DisasterSkills (
-    disasterType TEXT,
-    SkillID INT,
-    PRIMARY KEY (DisasterType, SkillID),
-    FOREIGN KEY (SkillID) REFERENCES Skills(ID) ON DELETE CASCADE ON UPDATE CASCADE
-);
+
 
 CREATE TABLE Report (
     ID SERIAL PRIMARY KEY,
@@ -78,9 +77,18 @@ CREATE TABLE Disaster (
     ReportPath TEXT,
     MaxPersonnel INT,
     ReportID int,
+    radius int,
     FOREIGN KEY(ReportID) REFERENCES Report(ID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE DisasterSkills (
+    disasterID INT,
+    SkillID INT,
+    PRIMARY KEY (disasterID, SkillID),
+    FOREIGN KEY (SkillID) REFERENCES Skills(ID) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (disasterID) REFERENCES disaster(ID) ON DELETE CASCADE ON UPDATE CASCADE
+
+);
 
 CREATE TABLE Authority (
     ID VARCHAR(50) PRIMARY KEY,
@@ -124,6 +132,15 @@ CREATE TABLE DisasterGuidelines (
     FOREIGN KEY (AuthorityID) REFERENCES Authority(ID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE VolunteerGuidelines(
+    ID SERIAL PRIMARY KEY,
+    DisasterID INT,
+    guideline TEXT,
+    IssuedTime TIMESTAMP,
+    AuthorityID VARCHAR(25),
+    FOREIGN KEY (DisasterID) REFERENCES Disaster(ID) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (AuthorityID) REFERENCES Authority(ID) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 -- Sample Data
 
@@ -220,71 +237,50 @@ INSERT INTO skills (id, skill) VALUES
 (9, 'Psychological First Aid'),
 (10, 'Radio Communication');
 
-INSERT INTO DisasterSkills (disasterType, SkillID) VALUES
--- Earthquake
-('Earthquake', 1),  -- Medical Assistance
-('Earthquake', 2),  -- CPR & First Aid
-('Earthquake', 4),  -- Search and Rescue
-('Earthquake', 6),  -- Disaster Assessment
 
--- Flood
-('Flood', 1),  -- Medical Assistance
-('Flood', 2),  -- CPR & First Aid
-('Flood', 3),  -- Swimming
-('Flood', 4),  -- Search and Rescue
-('Flood', 7),  -- Emergency Shelter Management
-('Flood', 8),  -- Logistics and Supply Chain
+INSERT INTO contacts (position, telephone, district) VALUES
+('District Collector', '04772251675', 'Alappuzha'),
+('Dy. Collector (DM)', '04772251720', 'Alappuzha'),
+('Superintendent of Police', '04772239326', 'Alappuzha'),
+('District Collector', '04842423001', 'Ernakulam'),
+('Dy. Collector (DM)', '04842424838', 'Ernakulam'),
+('Commissioner City Police', '04842385000', 'Ernakulam'),
+('District Collector', '04862233101', 'Idukki'),
+('Dy. Collector & A.D.M', '04862233056', 'Idukki'),
+('Superintendent of Police', '04862233006', 'Idukki'),
+('District Collector', '04972700243', 'Kannur'),
+('Dy. Collector (DM)', '04972700242', 'Kannur'),
+('Superintendent of Police', '04972763330', 'Kannur'),
+('District Collector', '04994256400', 'Kasaragod'),
+('Dy. Collector & A.D.M', '04994255833', 'Kasaragod'),
+('Superintendent of Police', '04994257401', 'Kasaragod'),
+('District Collector', '04742794900', 'Kollam'),
+('Dy. Collector & A.D.M', '04742795186', 'Kollam'),
+('Superintendent of Police', '04742764422', 'Kollam'),
+('District Collector', '04812562001', 'Kottayam'),
+('Dy. Collector & A.D.M', '04812564800', 'Kottayam'),
+('Superintendent of Police', '04812564700', 'Kottayam'),
+('District Collector', '04952371400', 'Kozhikode'),
+('Dy. Collector (DM)', '04952383500', 'Kozhikode'),
+('Police Commissioner', '04952722911', 'Kozhikode'),
+('District Collector', '04832734355', 'Malappuram'),
+('Dy. Collector (DM)', '04832734225', 'Malappuram'),
+('Superintendent of Police', '04832734377', 'Malappuram'),
+('District Collector', '04912505266', 'Palakkad'),
+('Dy. Collector A.D.M', '04912533026', 'Palakkad'),
+('Superintendent of Police', '04912534011', 'Palakkad'),
+('District Collector', '04682222505', 'Pathanamthitta'),
+('Dy. Collector (DM)', '04682222515', 'Pathanamthitta'),
+('Superintendent of Police', '04682222636', 'Pathanamthitta'),
+('District Collector', '04712731177', 'Thiruvananthapuram'),
+('Dy. Collector & A.D.M', '04712731188', 'Thiruvananthapuram'),
+('Superintendent of Police', '04712320486', 'Thiruvananthapuram'),
+('District Collector', '04872361020', 'Thrissur'),
+('Superintendent of Police', '04872361000', 'Thrissur'),
+('District Collector', '04936202230', 'Wayanad'),
+('Dy. Collector & A.D.M', '04936202532', 'Wayanad'),
+('Superintendent of Police', '04936202525', 'Wayanad');
 
--- Wildfire
-('Wildfire', 1),  -- Medical Assistance
-('Wildfire', 5),  -- Firefighting
-('Wildfire', 6),  -- Disaster Assessment
-('Wildfire', 9),  -- Psychological First Aid
-
--- Hurricane
-('Hurricane', 1),  -- Medical Assistance
-('Hurricane', 4),  -- Search and Rescue
-('Hurricane', 7),  -- Emergency Shelter Management
-('Hurricane', 8),  -- Logistics and Supply Chain
-('Hurricane', 10), -- Radio Communication
-
--- Tornado
-('Tornado', 1),  -- Medical Assistance
-('Tornado', 4),  -- Search and Rescue
-('Tornado', 6),  -- Disaster Assessment
-('Tornado', 7),  -- Emergency Shelter Management
-('Tornado', 9),  -- Psychological First Aid
-
--- Tsunami
-('Tsunami', 1),  -- Medical Assistance
-('Tsunami', 2),  -- CPR & First Aid
-('Tsunami', 3),  -- Swimming
-('Tsunami', 4),  -- Search and Rescue
-
--- Landslide
-('Landslide', 1),  -- Medical Assistance
-('Landslide', 4),  -- Search and Rescue
-('Landslide', 6),  -- Disaster Assessment
-('Landslide', 7),  -- Emergency Shelter Management
-('Landslide', 10), -- Radio Communication
-
--- Pandemic
-('Pandemic', 1),  -- Medical Assistance
-('Pandemic', 2),  -- CPR & First Aid
-('Pandemic', 8),  -- Logistics and Supply Chain
-('Pandemic', 9),  -- Psychological First Aid
-
--- Drought
-('Drought', 8),  -- Logistics and Supply Chain
-('Drought', 9),  -- Psychological First Aid
-
--- Industrial Disaster
-('Industrial Disaster', 1), -- Medical Assistance
-('Industrial Disaster', 5), -- Firefighting
-('Industrial Disaster', 6), -- Disaster Assessment
-('Industrial Disaster', 8), -- Logistics and Supply Chain
-('Industrial Disaster', 10) -- Radio Communication
-;
 
 
 

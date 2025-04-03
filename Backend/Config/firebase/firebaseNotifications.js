@@ -38,12 +38,20 @@ const sendMulticastNotification = async (deviceTokens, title, body) => {
   };
   console.log(deviceTokens)
   try {
-    const response = await admin.messaging().sendEachForMulticast(message);
-    console.log("Multicast Notification sent successfully:", response);
-    return response;
+    if(deviceTokens)
+    {
+      let response = await admin.messaging().sendEachForMulticast(message);
+      console.log("Multicast Notification sent successfully:", response);
+      return response;
+    }
+    else
+    {
+      throw error
+    }
+
   } catch (error) {
-    console.error("Error sending notification:", error);
-    throw error;
+    console.error("Error sending notification:");
+
   }
 };
 
